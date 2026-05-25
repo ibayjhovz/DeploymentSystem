@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pangasinan Telecom Dispatch Engine</title>
+    <title>Pangasinan Full-Grid Telecom Dispatch Engine</title>
     <!-- Tailwind CSS for sleek layout styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTML2Canvas Library to convert HTML components into downloadable images/photos -->
@@ -16,7 +16,7 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold text-amber-400 tracking-wide">🛰️ PANGASINAN TELECOM DISPATCH</h1>
-                <p class="text-xs text-slate-400">Region I Core Field Operations Engine</p>
+                <p class="text-xs text-slate-400">All 48 Municipalities & Cities Fully Integrated</p>
             </div>
             <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow">
                 📋 End of Day Report
@@ -44,18 +44,14 @@
                 <!-- Form A: Create New Work Ticket -->
                 <form id="add-ticket-form" onsubmit="handleCreateTicket(event)" class="space-y-2.5">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400">File New Dispatch Ticket</h2>
-                    <input type="text" id="form-issue" placeholder="Issue (e.g., Fiber Link Cut, Red Light Modem)" required 
+                    <input type="text" id="form-issue" placeholder="Issue (e.g., Cut Drop Wire, High Attenuation)" required 
                         class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
                     <div class="grid grid-cols-2 gap-2">
                         <input type="text" id="form-nap" placeholder="NAP Node ID" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
                         <select id="form-ticket-location" required 
-                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-amber-500">
-                            <option value="Dagupan">Dagupan City</option>
-                            <option value="Urdaneta">Urdaneta City</option>
-                            <option value="Lingayen">Lingayen</option>
-                            <option value="San Carlos">San Carlos City</option>
-                            <option value="Alaminos">Alaminos City</option>
+                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-amber-500 location-dropdown">
+                            <!-- Populated dynamically via JS -->
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2 rounded transition shadow">
@@ -63,22 +59,18 @@
                     </button>
                 </form>
 
-                <!-- Form B: Register New Field Technician (Hidden by default) -->
+                <!-- Form B: Register New Field Technician -->
                 <form id="add-tech-form" onsubmit="handleCreateTechnician(event)" class="space-y-2.5 hidden">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-blue-400">Register Field Technician</h2>
                     <input type="text" id="form-tech-name" placeholder="Technician Full Name" required 
                         class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                    <input type="text" id="form-tech-skill" placeholder="Specialization (e.g., Splicing, FTTH)" required 
+                    <input type="text" id="form-tech-skill" placeholder="Specialization (e.g., Splicing, Fiber, Copper)" required 
                         class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                     <div>
-                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Dispatch Hub Base</label>
+                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Base Station / Hub</label>
                         <select id="form-tech-location" required 
-                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
-                            <option value="Dagupan">Dagupan City Base</option>
-                            <option value="Urdaneta">Urdaneta City Base</option>
-                            <option value="Lingayen">Lingayen Hub</option>
-                            <option value="San Carlos">San Carlos Station</option>
-                            <option value="Alaminos">Alaminos Core West</option>
+                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 location-dropdown">
+                            <!-- Populated dynamically via JS -->
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded transition shadow">
@@ -118,6 +110,12 @@
                     <h1 class="text-xl font-black tracking-wide text-slate-900 uppercase">PROVINCIAL OPERATIONS LOG</h1>
                     <p class="text-xs text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
                 </div>
+
+                <!-- NEW: Dynamic Analytics Summary Boxes -->
+                <div id="report-analytics-bar" class="grid grid-cols-4 gap-2 mb-6 text-center">
+                    <!-- Injected dynamically via JS -->
+                </div>
+
                 <div id="report-items-list" class="space-y-4"></div>
             </div>
 
@@ -132,28 +130,77 @@
 
     <!-- System Application Logic -->
     <script>
-        // Provincial Coordinate Reference Engine
         const coordinatesMap = {
-            "Dagupan": { lat: 16.0433, lon: 120.3333, fullAddress: "AB Fernandez Ave, Dagupan City" },
-            "Urdaneta": { lat: 15.9758, lon: 120.5692, fullAddress: "McArthur Highway, Urdaneta City" },
-            "Lingayen": { lat: 16.0204, lon: 120.2335, fullAddress: "Poblacion, Lingayen" },
-            "San Carlos": { lat: 15.9272, lon: 120.3489, fullAddress: "Roxas Blvd, San Carlos City" },
-            "Alaminos": { lat: 16.1561, lon: 119.9806, fullAddress: "Quezon Avenue, Alaminos City" }
+            "Agno": { lat: 16.1153, lon: 119.7971, fullAddress: "Poblacion, Agno, Pangasinan" },
+            "Aguilar": { lat: 15.8886, lon: 120.2378, fullAddress: "Poblacion, Aguilar, Pangasinan" },
+            "Alaminos City": { lat: 16.1561, lon: 119.9806, fullAddress: "Quezon Ave, Alaminos City, Pangasinan" },
+            "Alcala": { lat: 15.8458, lon: 120.5219, fullAddress: "Poblacion, Alcala, Pangasinan" },
+            "Anda": { lat: 16.2908, lon: 119.9575, fullAddress: "Poblacion, Anda, Pangasinan" },
+            "Asingan": { lat: 15.9877, lon: 120.6738, fullAddress: "Poblacion, Asingan, Pangasinan" },
+            "Balungao": { lat: 15.8986, lon: 120.6711, fullAddress: "Poblacion, Balungao, Pangasinan" },
+            "Bani": { lat: 16.1831, lon: 119.8631, fullAddress: "Poblacion, Bani, Pangasinan" },
+            "Basista": { lat: 15.8583, lon: 120.3958, fullAddress: "Poblacion, Basista, Pangasinan" },
+            "Bautista": { lat: 15.8122, lon: 120.4819, fullAddress: "Poblacion, Bautista, Pangasinan" },
+            "Bayambang": { lat: 15.8139, lon: 120.4578, fullAddress: "Poblacion, Bayambang, Pangasinan" },
+            "Binalonan": { lat: 16.0464, lon: 120.5925, fullAddress: "Poblacion, Binalonan, Pangasinan" },
+            "Binmaley": { lat: 16.0311, lon: 120.2686, fullAddress: "Poblacion, Binmaley, Pangasinan" },
+            "Bolinao": { lat: 16.3850, lon: 119.8928, fullAddress: "Poblacion, Bolinao, Pangasinan" },
+            "Bugallon": { lat: 15.9606, lon: 120.2119, fullAddress: "Poblacion, Bugallon, Pangasinan" },
+            "Burgos": { lat: 16.0642, lon: 119.8658, fullAddress: "Poblacion, Burgos, Pangasinan" },
+            "Calasiao": { lat: 16.0075, lon: 120.3614, fullAddress: "Poblacion, Calasiao, Pangasinan" },
+            "Dagupan City": { lat: 16.0433, lon: 120.3333, fullAddress: "AB Fernandez Ave, Dagupan City, Pangasinan" },
+            "Dasol": { lat: 15.9900, lon: 119.8797, fullAddress: "Poblacion, Dasol, Pangasinan" },
+            "Infanta": { lat: 15.8236, lon: 119.9078, fullAddress: "Poblacion, Infanta, Pangasinan" },
+            "Labrador": { lat: 16.0272, lon: 120.1444, fullAddress: "Poblacion, Labrador, Pangasinan" },
+            "Laoac": { lat: 16.0525, lon: 120.5422, fullAddress: "Poblacion, Laoac, Pangasinan" },
+            "Lingayen": { lat: 16.0204, lon: 120.2335, fullAddress: "Poblacion, Lingayen, Pangasinan" },
+            "Mabini": { lat: 16.0406, lon: 119.9400, fullAddress: "Poblacion, Mabini, Pangasinan" },
+            "Malasiqui": { lat: 15.9292, lon: 120.4136, fullAddress: "Poblacion, Malasiqui, Pangasinan" },
+            "Manaoag": { lat: 16.0425, lon: 120.4858, fullAddress: "Poblacion, Manaoag, Pangasinan" },
+            "Mangaldan": { lat: 16.0683, lon: 120.4019, fullAddress: "Poblacion, Mangaldan, Pangasinan" },
+            "Mangatarem": { lat: 15.7892, lon: 120.2886, fullAddress: "Poblacion, Mangatarem, Pangasinan" },
+            "Mapandan": { lat: 16.0272, lon: 120.4497, fullAddress: "Poblacion, Mapandan, Pangasinan" },
+            "Natividad": { lat: 16.0456, lon: 120.7981, fullAddress: "Poblacion, Natividad, Pangasinan" },
+            "Pozorrubio": { lat: 16.1111, lon: 120.5408, fullAddress: "Poblacion, Pozorrubio, Pangasinan" },
+            "Rosales": { lat: 15.8903, lon: 120.6353, fullAddress: "Poblacion, Rosales, Pangasinan" },
+            "San Carlos City": { lat: 15.9272, lon: 120.3489, fullAddress: "Roxas Blvd, San Carlos City, Pangasinan" },
+            "San Fabian": { lat: 16.1256, lon: 120.4042, fullAddress: "Poblacion, San Fabian, Pangasinan" },
+            "San Jacinto": { lat: 16.0717, lon: 120.4419, fullAddress: "Poblacion, San Jacinto, Pangasinan" },
+            "San Manuel": { lat: 16.0658, lon: 120.6675, fullAddress: "Poblacion, San Manuel, Pangasinan" },
+            "San Nicolas": { lat: 16.0694, lon: 120.7644, fullAddress: "Poblacion, San Nicolas, Pangasinan" },
+            "San Quintin": { lat: 15.9878, lon: 120.8142, fullAddress: "Poblacion, San Quintin, Pangasinan" },
+            "Santa Barbara": { lat: 16.0025, lon: 120.4022, fullAddress: "Poblacion, Santa Barbara, Pangasinan" },
+            "Santa Maria": { lat: 15.9794, lon: 120.6983, fullAddress: "Poblacion, Santa Maria, Pangasinan" },
+            "Santo Tomas": { lat: 15.8822, lon: 120.5847, fullAddress: "Poblacion, Santo Tomas, Pangasinan" },
+            "Sison": { lat: 16.1739, lon: 120.5706, fullAddress: "Poblacion, Sison, Pangasinan" },
+            "Sual": { lat: 16.0628, lon: 120.0894, fullAddress: "Poblacion, Sual, Pangasinan" },
+            "Tayug": { lat: 16.0275, lon: 120.7456, fullAddress: "Poblacion, Tayug, Pangasinan" },
+            "Umingan": { lat: 15.9281, lon: 120.7850, fullAddress: "Poblacion, Umingan, Pangasinan" },
+            "Urdaneta City": { lat: 15.9758, lon: 120.5692, fullAddress: "McArthur Highway, Urdaneta City, Pangasinan" },
+            "Urbiztondo": { lat: 15.8219, lon: 120.3283, fullAddress: "Poblacion, Urbiztondo, Pangasinan" },
+            "Villasis": { lat: 15.9019, lon: 120.5878, fullAddress: "Poblacion, Villasis, Pangasinan" }
         };
 
-        // Data Storage Array Interfaces
         const mockTickets = [
-            { id: "t1", customerName: "Dagupan Hub Site", address: "AB Fernandez Ave, Dagupan City", napTerminalId: "NAP-DAG-012", issueType: "Main Fiber Trunk Line Cut (FTTH)", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 },
-            { id: "t2", customerName: "Urdaneta Site Sub", address: "McArthur Highway, Urdaneta City", napTerminalId: "NAP-URD-088", issueType: "High Optical Signal Loss (-29dBm)", status: "PENDING", assignedTech: "Unassigned", lat: 15.9758, lon: 120.5692 }
+            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 }
         ];
 
         const mockTechnicians = [
-            { id: "tech1", name: "Juan Dela Cruz", status: "IDLE", currentStation: "Urdaneta Base", lat: 15.9760, lon: 120.5710, skills: ["Fiber Splicing"] },
-            { id: "tech2", name: "Mark Santos", status: "IDLE", currentStation: "Calasiao Patrol Zone", lat: 16.0075, lon: 120.3614, skills: ["Modem Provisioning"] }
+            { id: "tech1", name: "Juan Dela Cruz", status: "IDLE", currentStation: "Urdaneta City Base", lat: 15.9758, lon: 120.5692, skills: ["Fiber Splicing"] }
         ];
 
-        // Global state tracking variable for current active interface perspective
         let activeTicketId = null;
+
+        function populateDropdowns() {
+            const dropdowns = document.querySelectorAll('.location-dropdown');
+            const optionsHtml = Object.keys(coordinatesMap).sort().map(loc => `
+                <option value="${loc}">${loc}</option>
+            `).join('');
+            
+            dropdowns.forEach(dropdown => {
+                dropdown.innerHTML = optionsHtml;
+            });
+        }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; 
@@ -163,7 +210,6 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // Layout UI switcher handling input configurations
         window.switchFormTab = function(type) {
             const ticketForm = document.getElementById('add-ticket-form');
             const techForm = document.getElementById('add-tech-form');
@@ -173,17 +219,16 @@
             if (type === 'ticket') {
                 ticketForm.classList.remove('hidden');
                 techForm.classList.add('hidden');
-                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950 transition";
-                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950";
+                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
             } else {
                 ticketForm.classList.add('hidden');
                 techForm.classList.remove('hidden');
-                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
-                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-blue-600 text-white transition";
+                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
+                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-blue-600 text-white";
             }
         }
 
-        // Process creation inputs for Dispatch Tickets
         window.handleCreateTicket = function(event) {
             event.preventDefault();
             const issue = document.getElementById('form-issue').value;
@@ -195,7 +240,7 @@
 
             mockTickets.unshift({
                 id: uniqueId,
-                customerName: `${locationKey} Site Sub`,
+                customerName: `${locationKey} Grid Terminal`,
                 address: locationData.fullAddress,
                 napTerminalId: napId.toUpperCase(),
                 issueType: issue,
@@ -210,7 +255,6 @@
             analyzeDispatchMatrix(uniqueId);
         }
 
-        // Process entry parameters for Field Technicians
         window.handleCreateTechnician = function(event) {
             event.preventDefault();
             const name = document.getElementById('form-tech-name').value;
@@ -224,19 +268,15 @@
                 id: uniqueId,
                 name: name,
                 status: "IDLE",
-                currentStation: `${locationKey} Station Base`,
+                currentStation: `${locationKey} Hub Station`,
                 lat: locationData.lat,
                 lon: locationData.lon,
                 skills: [skill]
             });
 
             document.getElementById('add-tech-form').reset();
-            alert(`Technician ${name} onboarded successfully to the ${locationKey} grid system.`);
-            
-            // If a ticket workspace is actively open, automatically refresh distance scoring metrics
-            if (activeTicketId) {
-                analyzeDispatchMatrix(activeTicketId);
-            }
+            alert(`Technician ${name} onboarded onto the ${locationKey} grid.`);
+            if (activeTicketId) analyzeDispatchMatrix(activeTicketId);
         }
 
         function renderTicketQueue() {
@@ -294,7 +334,7 @@
                             <thead class="bg-slate-900 border-b border-slate-700 text-slate-400">
                                 <tr>
                                     <th class="p-3">Technician</th>
-                                    <th class="p-3">Distance</th>
+                                    <th class="p-3">Distance Matrix</th>
                                     <th class="p-3 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -336,12 +376,42 @@
         window.openDailyReportModal = function() {
             document.getElementById('report-modal').classList.remove('hidden');
             const itemsList = document.getElementById('report-items-list');
+            const analyticsBar = document.getElementById('report-analytics-bar');
+            
+            // Calculate dynamic totals for the summary dashboard banner
+            const totalTasks = mockTickets.length;
+            const completedCount = mockTickets.filter(t => t.status === 'COMPLETED').length;
+            const inProgressCount = mockTickets.filter(t => t.status === 'IN_PROGRESS').length;
+            const pendingCount = mockTickets.filter(t => t.status === 'PENDING').length;
+
+            // Render out clean high-contrast scorecard tiles inside the printable report block
+            analyticsBar.innerHTML = `
+                <div class="bg-slate-100 p-2 border border-slate-300 rounded">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Overall Tasks</p>
+                    <p class="text-xl font-black text-slate-900">${totalTasks}</p>
+                </div>
+                <div class="bg-emerald-50 p-2 border border-emerald-200 rounded">
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Complete</p>
+                    <p class="text-xl font-black text-emerald-700">${completedCount}</p>
+                </div>
+                <div class="bg-amber-50 p-2 border border-amber-200 rounded">
+                    <p class="text-[10px] font-bold text-amber-600 uppercase tracking-tight">In Progress</p>
+                    <p class="text-xl font-black text-amber-700">${inProgressCount}</p>
+                </div>
+                <div class="bg-red-50 p-2 border border-red-200 rounded">
+                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-tight">Pending</p>
+                    <p class="text-xl font-black text-red-700">${pendingCount}</p>
+                </div>
+            `;
             
             itemsList.innerHTML = mockTickets.map(t => `
                 <div class="border-b border-slate-200 pb-3 last:border-0">
                     <div class="flex justify-between items-start">
                         <h4 class="font-bold text-slate-900 text-sm">${t.issueType}</h4>
-                        <span class="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded ${t.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${t.status}</span>
+                        <span class="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded ${
+                            t.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                            t.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                        }">${t.status}</span>
                     </div>
                     <p class="text-xs text-slate-600 mt-0.5">Terminal Node: ${t.napTerminalId} | Location: ${t.address}</p>
                     <p class="text-xs text-slate-500">Assigned Tech Unit: ${t.assignedTech}</p>
@@ -359,11 +429,13 @@
                 const imageFile = canvas.toDataURL("image/png");
                 const downloadLink = document.createElement('a');
                 downloadLink.href = imageFile;
-                downloadLink.download = `Pangasinan_Telecom_Daily_Report_${new Date().toISOString().split('T')[0]}.png`;
+                downloadLink.download = `Full_Pangasinan_Daily_Report_${new Date().toISOString().split('T')[0]}.png`;
                 downloadLink.click();
             });
         }
 
+        // Run Initializers
+        populateDropdowns();
         renderTicketQueue();
     </script>
 </body>
