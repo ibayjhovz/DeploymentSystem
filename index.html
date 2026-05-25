@@ -3,35 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecom Technician Deployment System MVP</title>
+    <title>Pangasinan Telecom Dispatch Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 font-sans antialiased">
 
-    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50">
+    <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-400 tracking-wide">🛰️ TELECOM DISPATCH SYSTEM</h1>
-            <div class="flex space-x-4 text-sm text-gray-400">
-                <div>Network Status: <span class="text-green-400 font-semibold">● ONLINE</span></div>
-                <div>Active Crews: <span id="crew-count" class="text-white font-semibold">3</span></div>
+            <div>
+                <h1 class="text-xl font-bold text-amber-400 tracking-wide">🛰️ PANGASINAN TELECOM DISPATCH</h1>
+                <p class="text-xs text-slate-400">Region I Core Field Operations Engine</p>
+            </div>
+            <div class="flex space-x-6 text-sm">
+                <div>Grid Status: <span class="text-emerald-400 font-semibold">● ACTIVE</span></div>
+                <div>Crews On-Duty: <span id="crew-count" class="text-white font-semibold">3 Units</span></div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)]">
+    <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-90px)]">
         
-        <section class="lg:col-span-4 bg-gray-800 border border-gray-700 rounded-xl p-4 flex flex-col h-full">
-            <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
-                📥 Infrastructure Alerts Queue
+        <section class="lg:col-span-4 bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col h-full">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                📍 Active Provincial Tickets
             </h2>
             <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1">
                 </div>
         </section>
 
-        <section class="lg:col-span-8 bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col h-full justify-between">
+        <section class="lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full justify-between">
             <div id="matrix-workspace">
-                <div class="text-center py-20 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl">
-                    <p class="text-lg">Select an active infrastructure ticket from the queue to run geo-dispatch calculations.</p>
+                <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
+                    <p class="text-lg mb-1">Select an active Pangasinan node ticket to view closest field responders.</p>
+                    <p class="text-xs text-slate-600">Calculations will prioritize dispatch units within nearby municipalities.</p>
                 </div>
             </div>
         </section>
@@ -39,20 +43,68 @@
     </main>
 
     <script>
-        // Mocking localized database layers for immediate runtime without database configuration friction
+        // High-precision coordinates mapped directly within localized boundaries of Pangasinan
         const mockTickets = [
-            { id: "t1", customerName: "Rona Rance", address: "Pangasinan, Philippines", napTerminalId: "NAP-312-North", issueType: "Fiber Link Down (FTTH)", lat: 15.9758, lon: 120.5692 },
-            { id: "t2", customerName: "John Doe", address: "Manila, Philippines", napTerminalId: "NAP-004-Core", issueType: "High Optical Signal Loss (-28dBm)", lat: 14.5995, lon: 120.9842 },
-            { id: "t3", customerName: "Jane Smith", address: "Cebu, Philippines", napTerminalId: "NAP-77-South", issueType: "Modem Activation Failure", lat: 10.3157, lon: 123.8854 }
+            { 
+                id: "t1", 
+                customerName: "Dagupan Hub", 
+                address: "AB Fernandez Ave, Dagupan City, Pangasinan", 
+                napTerminalId: "NAP-DAG-012", 
+                issueType: "Main Fiber Trunk Line Cut (FTTH)", 
+                lat: 16.0433, 
+                lon: 120.3333 
+            },
+            { 
+                id: "t2", 
+                customerName: "Urdaneta Business Center", 
+                address: "McArthur Highway, Urdaneta City, Pangasinan", 
+                napTerminalId: "NAP-URD-088", 
+                issueType: "High Optical Signal Loss (-29dBm)", 
+                lat: 15.9758, 
+                lon: 120.5692 
+            },
+            { 
+                id: "t3", 
+                customerName: "Lingayen Coastal Node", 
+                address: "Poblacion, Lingayen, Pangasinan", 
+                napTerminalId: "NAP-LIN-045", 
+                issueType: "Modem Activation Loop Error", 
+                lat: 16.0204, 
+                lon: 120.2335 
+            }
         ];
 
         const mockTechnicians = [
-            { id: "tech1", name: "Tech Unit Alpha (Splicing Specialist)", status: "IDLE", lat: 15.9600, lon: 120.5500, skills: ["Fiber Splicing", "ODTR Testing"] },
-            { id: "tech2", name: "Tech Unit Beta (FTTH Home Installer)", status: "IDLE", lat: 15.9900, lon: 120.5800, skills: ["Modem Provisioning", "Drop Wire Repair"] },
-            { id: "tech3", name: "Tech Unit Gamma (Heavy Infrastructure)", status: "ON_SITE", lat: 14.6100, lon: 120.9900, skills: ["OLT Maintenance", "Coaxial Trunk"] }
+            { 
+                id: "tech1", 
+                name: "Juan Dela Cruz (Splicing Specialist)", 
+                status: "IDLE", 
+                currentStation: "Urdaneta Base",
+                lat: 15.9760, 
+                lon: 120.5710, 
+                skills: ["Fiber Splicing", "ODTR Testing"] 
+            },
+            { 
+                id: "tech2", 
+                name: "Mark Santos (FTTH Installer)", 
+                status: "IDLE", 
+                currentStation: "Calasiao Patrol Zone",
+                lat: 16.0075, 
+                lon: 120.3614, 
+                skills: ["Modem Provisioning", "Drop Wire Repair"] 
+            },
+            { 
+                id: "tech3", 
+                name: "Rudy Aquino (Heavy Infrastructure Team)", 
+                status: "ON_SITE", 
+                currentStation: "San Carlos Service Link",
+                lat: 15.9272, 
+                lon: 120.3489, 
+                skills: ["OLT Maintenance", "Coaxial Trunk Line"] 
+            }
         ];
 
-        // Haversine formula calculation logic to determine proximity
+        // Haversine formula calculation logic to determine proximity across the province
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; // Earth's Radius in KM
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -61,64 +113,66 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // Render the list of pending tasks on startup
+        // Render localized tickets into UI sidebar list container
         function renderTicketQueue() {
             const queueContainer = document.getElementById('ticket-queue');
             queueContainer.innerHTML = mockTickets.map(ticket => `
-                <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-gray-950 p-4 border border-gray-700 hover:border-blue-500 rounded-lg cursor-pointer transition group">
+                <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition group">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="bg-red-500/10 text-red-400 text-xs px-2.5 py-1 rounded font-medium border border-red-500/20">🚨 Critical</span>
-                        <span class="text-xs text-gray-500 group-hover:text-blue-400 font-mono transition">Run Logic →</span>
+                        <span class="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded font-medium border border-red-500/20">🚨 Service Outage</span>
+                        <span class="text-xs text-slate-500 group-hover:text-amber-400 font-mono transition">Analyze Matrix →</span>
                     </div>
                     <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
-                    <p class="text-xs text-gray-400 mb-1"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
-                    <p class="text-xs text-gray-500 truncate">📍 ${ticket.address}</p>
+                    <p class="text-xs text-slate-400 mb-1"><strong>Node ID:</strong> ${ticket.napTerminalId}</p>
+                    <p class="text-xs text-slate-500 truncate">📍 ${ticket.address}</p>
                 </div>
             `).join('');
         }
 
-        // Execute matching algorithms dynamically on click
+        // Run geographic optimization matrix mapping
         window.analyzeDispatchMatrix = function(ticketId) {
             const ticket = mockTickets.find(t => t.id === ticketId);
             const workspace = document.getElementById('matrix-workspace');
 
-            // Map distances to available technicians
+            // Map distances based on coordinates relative to target town center
             const sortedTechs = mockTechnicians.map(tech => {
                 const distance = calculateDistance(ticket.lat, ticket.lon, tech.lat, tech.lon);
                 return { ...tech, distance };
             }).sort((a, b) => a.distance - b.distance);
 
             workspace.innerHTML = `
-                <div class="mb-6">
-                    <div class="text-xs font-bold tracking-wider text-blue-400 uppercase mb-1">Active Optimization Target</div>
-                    <h2 class="text-xl font-bold text-white mb-2">${ticket.issueType}</h2>
-                    <p class="text-sm text-gray-400">Target Box Node: <span class="text-gray-200 font-mono">${ticket.napTerminalId}</span> (${ticket.lat}, ${ticket.lon})</p>
+                <div class="mb-6 bg-slate-950 p-4 rounded-lg border border-slate-700">
+                    <div class="text-xs font-bold tracking-wider text-amber-400 uppercase mb-1">Target Infrastructure Terminal</div>
+                    <h2 class="text-lg font-bold text-white mb-1">${ticket.issueType}</h2>
+                    <p class="text-sm text-slate-300 mb-1">📍 ${ticket.address}</p>
+                    <p class="text-xs text-slate-500 font-mono">Node Coordinates: ${ticket.lat.toFixed(4)}° N, ${ticket.lon.toFixed(4)}° E</p>
                 </div>
 
-                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Geospatial Routing Matches (Closest First)</h3>
-                <div class="overflow-hidden border border-gray-700 rounded-lg bg-gray-950">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Geospatial Routing (Nearest Pangasinan Team First)</h3>
+                <div class="overflow-hidden border border-slate-700 rounded-lg bg-slate-950">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-900 border-b border-gray-700 text-gray-400 font-medium">
+                        <thead class="bg-slate-900 border-b border-slate-700 text-slate-400 font-medium">
                             <tr>
-                                <th class="p-3">Field Crew</th>
-                                <th class="p-3">Proximity</th>
-                                <th class="p-3">Certifications</th>
-                                <th class="p-3 text-right">Action</th>
+                                <th class="p-3">Field Responder / Unit</th>
+                                <th class="p-3">Last Known Station</th>
+                                <th class="p-3">Proximity Distance</th>
+                                <th class="p-3 text-right">Deployment Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-800">
                             ${sortedTechs.map(tech => `
                                 <tr>
-                                    <td class="p-3 font-medium text-white flex items-center gap-2">
-                                        <span class="w-2 height h-2 rounded-full ${tech.status === 'IDLE' ? 'bg-green-400' : 'bg-amber-400'}"></span>
-                                        ${tech.name}
+                                    <td class="p-3 font-medium text-white">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full ${tech.status === 'IDLE' ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+                                            ${tech.name}
+                                        </div>
+                                        <div class="text-xs text-slate-500 mt-0.5">${tech.skills.join(', ')}</div>
                                     </td>
-                                    <td class="p-3 text-gray-300 font-mono">${tech.distance.toFixed(2)} km away</td>
-                                    <td class="p-3">
-                                        ${tech.skills.map(skill => `<span class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded border border-gray-700 mr-1">${skill}</span>`).join('')}
-                                    </td>
+                                    <td class="p-3 text-slate-300">${tech.currentStation}</td>
+                                    <td class="p-3 font-mono text-amber-300 font-semibold">${tech.distance.toFixed(2)} km away</td>
                                     <td class="p-3 text-right">
-                                        <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3 py-1.5 rounded transition">
+                                        <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3 py-1.5 rounded transition shadow-md">
                                             Deploy Unit
                                         </button>
                                     </td>
@@ -131,10 +185,12 @@
         }
 
         window.deployCrew = function(techId, ticketId) {
-            alert(`Deployment Command Issued! Crew ${techId} has been systematically routed to Ticket ${ticketId}. Check telemetry logs.`);
+            const tech = mockTechnicians.find(t => t.id === techId);
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            alert(`🚨 DISPATCH SUCCESSFUL:\n\n${tech.name} has been routed to ${ticket.customerName} located at ${ticket.address}.\n\nEstimated ETA calculations generated via provincial network layout grids.`);
         }
 
-        // Initialize display layers
+        // Initialize provincial system variables on app mount
         renderTicketQueue();
     </script>
 </body>
