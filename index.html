@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pangasinan Telecom Dispatch Engine</title>
+    <!-- Tailwind CSS for sleek layout styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTML2Canvas Library to convert HTML components into downloadable images/photos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased">
 
+    <!-- Top Regional Operations Header -->
     <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
@@ -21,15 +24,77 @@
         </div>
     </header>
 
+    <!-- Main Workspace Setup -->
     <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-90px)]">
         
-        <section class="lg:col-span-4 bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col h-full">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">
-                📍 Active Provincial Tickets
-            </h2>
-            <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+        <!-- LEFT PANEL: OPERATIONS MANAGEMENT CENTER (4 Columns) -->
+        <section class="lg:col-span-4 flex flex-col gap-4 h-full overflow-hidden">
+            
+            <!-- Management Panel Control Tabs -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col shrink-0">
+                <div class="flex border-b border-slate-700 pb-2 mb-3 gap-2">
+                    <button id="tab-ticket-btn" onclick="switchFormTab('ticket')" class="flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950 transition">
+                        + Ticket
+                    </button>
+                    <button id="tab-tech-btn" onclick="switchFormTab('tech')" class="flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">
+                        + Technician
+                    </button>
+                </div>
+
+                <!-- Form A: Create New Work Ticket -->
+                <form id="add-ticket-form" onsubmit="handleCreateTicket(event)" class="space-y-2.5">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400">File New Dispatch Ticket</h2>
+                    <input type="text" id="form-issue" placeholder="Issue (e.g., Fiber Link Cut, Red Light Modem)" required 
+                        class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="form-nap" placeholder="NAP Node ID" required 
+                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
+                        <select id="form-ticket-location" required 
+                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                            <option value="Dagupan">Dagupan City</option>
+                            <option value="Urdaneta">Urdaneta City</option>
+                            <option value="Lingayen">Lingayen</option>
+                            <option value="San Carlos">San Carlos City</option>
+                            <option value="Alaminos">Alaminos City</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2 rounded transition shadow">
+                        Log Ticket to Grid
+                    </button>
+                </form>
+
+                <!-- Form B: Register New Field Technician (Hidden by default) -->
+                <form id="add-tech-form" onsubmit="handleCreateTechnician(event)" class="space-y-2.5 hidden">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-blue-400">Register Field Technician</h2>
+                    <input type="text" id="form-tech-name" placeholder="Technician Full Name" required 
+                        class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    <input type="text" id="form-tech-skill" placeholder="Specialization (e.g., Splicing, FTTH)" required 
+                        class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Dispatch Hub Base</label>
+                        <select id="form-tech-location" required 
+                            class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                            <option value="Dagupan">Dagupan City Base</option>
+                            <option value="Urdaneta">Urdaneta City Base</option>
+                            <option value="Lingayen">Lingayen Hub</option>
+                            <option value="San Carlos">San Carlos Station</option>
+                            <option value="Alaminos">Alaminos Core West</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded transition shadow">
+                        Onboard Field Responder
+                    </button>
+                </form>
+            </div>
+
+            <!-- Outage Queue Grid View Container -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col flex-1 overflow-hidden">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">📍 Active Grid Tickets</h2>
+                <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            </div>
         </section>
 
+        <!-- DISPATCH ALGORITHM WORKSPACE (8 Columns) -->
         <section class="lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full overflow-y-auto">
             <div id="matrix-workspace">
                 <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
@@ -40,6 +105,7 @@
 
     </main>
 
+    <!-- MODAL POPUP FOR GENERATING DAILY REPORT -->
     <div id="report-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -52,8 +118,7 @@
                     <h1 class="text-xl font-black tracking-wide text-slate-900 uppercase">PROVINCIAL OPERATIONS LOG</h1>
                     <p class="text-xs text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
                 </div>
-                <div id="report-items-list" class="space-y-4">
-                    </div>
+                <div id="report-items-list" class="space-y-4"></div>
             </div>
 
             <div class="mt-4 flex justify-end space-x-3">
@@ -65,12 +130,21 @@
         </div>
     </div>
 
+    <!-- System Application Logic -->
     <script>
-        // Internal State Database Layer
+        // Provincial Coordinate Reference Engine
+        const coordinatesMap = {
+            "Dagupan": { lat: 16.0433, lon: 120.3333, fullAddress: "AB Fernandez Ave, Dagupan City" },
+            "Urdaneta": { lat: 15.9758, lon: 120.5692, fullAddress: "McArthur Highway, Urdaneta City" },
+            "Lingayen": { lat: 16.0204, lon: 120.2335, fullAddress: "Poblacion, Lingayen" },
+            "San Carlos": { lat: 15.9272, lon: 120.3489, fullAddress: "Roxas Blvd, San Carlos City" },
+            "Alaminos": { lat: 16.1561, lon: 119.9806, fullAddress: "Quezon Avenue, Alaminos City" }
+        };
+
+        // Data Storage Array Interfaces
         const mockTickets = [
-            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City", napTerminalId: "NAP-DAG-012", issueType: "Main Fiber Trunk Line Cut (FTTH)", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 },
-            { id: "t2", customerName: "Urdaneta Business Center", address: "McArthur Highway, Urdaneta City", napTerminalId: "NAP-URD-088", issueType: "High Optical Signal Loss (-29dBm)", status: "PENDING", assignedTech: "Unassigned", lat: 15.9758, lon: 120.5692 },
-            { id: "t3", customerName: "Lingayen Coastal Node", address: "Poblacion, Lingayen", napTerminalId: "NAP-LIN-045", issueType: "Modem Activation Loop Error", status: "PENDING", assignedTech: "Unassigned", lat: 16.0204, lon: 120.2335 }
+            { id: "t1", customerName: "Dagupan Hub Site", address: "AB Fernandez Ave, Dagupan City", napTerminalId: "NAP-DAG-012", issueType: "Main Fiber Trunk Line Cut (FTTH)", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 },
+            { id: "t2", customerName: "Urdaneta Site Sub", address: "McArthur Highway, Urdaneta City", napTerminalId: "NAP-URD-088", issueType: "High Optical Signal Loss (-29dBm)", status: "PENDING", assignedTech: "Unassigned", lat: 15.9758, lon: 120.5692 }
         ];
 
         const mockTechnicians = [
@@ -78,12 +152,91 @@
             { id: "tech2", name: "Mark Santos", status: "IDLE", currentStation: "Calasiao Patrol Zone", lat: 16.0075, lon: 120.3614, skills: ["Modem Provisioning"] }
         ];
 
+        // Global state tracking variable for current active interface perspective
+        let activeTicketId = null;
+
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        // Layout UI switcher handling input configurations
+        window.switchFormTab = function(type) {
+            const ticketForm = document.getElementById('add-ticket-form');
+            const techForm = document.getElementById('add-tech-form');
+            const ticketBtn = document.getElementById('tab-ticket-btn');
+            const techBtn = document.getElementById('tab-tech-btn');
+
+            if (type === 'ticket') {
+                ticketForm.classList.remove('hidden');
+                techForm.classList.add('hidden');
+                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950 transition";
+                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+            } else {
+                ticketForm.classList.add('hidden');
+                techForm.classList.remove('hidden');
+                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-blue-600 text-white transition";
+            }
+        }
+
+        // Process creation inputs for Dispatch Tickets
+        window.handleCreateTicket = function(event) {
+            event.preventDefault();
+            const issue = document.getElementById('form-issue').value;
+            const napId = document.getElementById('form-nap').value;
+            const locationKey = document.getElementById('form-ticket-location').value;
+            
+            const locationData = coordinatesMap[locationKey];
+            const uniqueId = "t_" + Date.now();
+
+            mockTickets.unshift({
+                id: uniqueId,
+                customerName: `${locationKey} Site Sub`,
+                address: locationData.fullAddress,
+                napTerminalId: napId.toUpperCase(),
+                issueType: issue,
+                status: "PENDING",
+                assignedTech: "Unassigned",
+                lat: locationData.lat,
+                lon: locationData.lon
+            });
+
+            document.getElementById('add-ticket-form').reset();
+            renderTicketQueue();
+            analyzeDispatchMatrix(uniqueId);
+        }
+
+        // Process entry parameters for Field Technicians
+        window.handleCreateTechnician = function(event) {
+            event.preventDefault();
+            const name = document.getElementById('form-tech-name').value;
+            const skill = document.getElementById('form-tech-skill').value;
+            const locationKey = document.getElementById('form-tech-location').value;
+
+            const locationData = coordinatesMap[locationKey];
+            const uniqueId = "tech_" + Date.now();
+
+            mockTechnicians.push({
+                id: uniqueId,
+                name: name,
+                status: "IDLE",
+                currentStation: `${locationKey} Station Base`,
+                lat: locationData.lat,
+                lon: locationData.lon,
+                skills: [skill]
+            });
+
+            document.getElementById('add-tech-form').reset();
+            alert(`Technician ${name} onboarded successfully to the ${locationKey} grid system.`);
+            
+            // If a ticket workspace is actively open, automatically refresh distance scoring metrics
+            if (activeTicketId) {
+                analyzeDispatchMatrix(activeTicketId);
+            }
         }
 
         function renderTicketQueue() {
@@ -107,7 +260,9 @@
         }
 
         window.analyzeDispatchMatrix = function(ticketId) {
+            activeTicketId = ticketId;
             const ticket = mockTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
             const workspace = document.getElementById('matrix-workspace');
 
             const sortedTechs = mockTechnicians.map(tech => {
@@ -122,7 +277,6 @@
                         <p class="text-sm text-slate-400">📍 ${ticket.address} (${ticket.napTerminalId})</p>
                         <p class="text-xs text-slate-500 mt-1">Assigned Tech: <strong class="text-slate-300">${ticket.assignedTech}</strong></p>
                     </div>
-                    
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
                         <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="bg-slate-800 border border-slate-600 text-white rounded p-2 text-sm focus:outline-none focus:border-amber-500">
@@ -134,7 +288,7 @@
                 </div>
 
                 ${ticket.status !== 'COMPLETED' ? `
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Deploy Local Field Unit</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Deploy Local Field Unit (Total On-Duty: ${mockTechnicians.length})</h3>
                     <div class="overflow-hidden border border-slate-700 rounded-lg bg-slate-950">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-900 border-b border-slate-700 text-slate-400">
@@ -147,7 +301,7 @@
                             <tbody class="divide-y divide-gray-800">
                                 ${sortedTechs.map(tech => `
                                     <tr>
-                                        <td class="p-3 font-medium text-white">${tech.name} <span class="text-xs block text-slate-500">${tech.currentStation}</span></td>
+                                        <td class="p-3 font-medium text-white">${tech.name} <span class="text-xs block text-slate-500">${tech.currentStation} (${tech.skills.join(', ')})</span></td>
                                         <td class="p-3 font-mono text-amber-300">${tech.distance.toFixed(2)} km</td>
                                         <td class="p-3 text-right">
                                             <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1.5 rounded hover:bg-amber-600 transition">
@@ -179,7 +333,6 @@
             analyzeDispatchMatrix(ticketId);
         }
 
-        // Generate dynamic HTML layout structure for the End-of-Day report
         window.openDailyReportModal = function() {
             document.getElementById('report-modal').classList.remove('hidden');
             const itemsList = document.getElementById('report-items-list');
@@ -200,10 +353,8 @@
             document.getElementById('report-modal').classList.add('hidden');
         }
 
-        // HTML2Canvas Core: Snaps the white container box element and downloads it as an image file
         window.captureReportAsPhoto = function() {
             const reportTarget = document.getElementById('photo-report-container');
-            
             html2canvas(reportTarget, { scale: 2 }).then(canvas => {
                 const imageFile = canvas.toDataURL("image/png");
                 const downloadLink = document.createElement('a');
