@@ -3,45 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EM-AMEN Pangasinan Full-Grid Telecom Dispatch Engine</title>
-    <!-- Tailwind CSS for sleek layout styling -->
+    <title>Pangasinan Full-Grid Telecom Dispatch Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTML2Canvas Library to convert HTML components into downloadable images/photos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 font-sans antialiased flex flex-col h-screen overflow-hidden">
 
-    <!-- Top Regional Operations Header -->
-    <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
+    <header class="bg-slate-800 border-b border-slate-700 p-4 shrink-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold text-amber-400 tracking-wide">🛰️ EM-AMEN PANGASINAN TELECOM DISPATCH</h1>
-                <p class="text-xs text-slate-400">All 48 Municipalities & Cities Fully Integrated</p>
+                <h1 class="text-sm md:text-xl font-bold text-amber-400 tracking-wide flex items-center gap-1">🛰️ <span class="hidden sm:inline">PANGASINAN</span> TELECOM DISPATCH</h1>
+                <p class="text-[10px] md:text-xs text-slate-400">48 Municipalities & Cities Fully Integrated</p>
             </div>
-            <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow">
-                📋 End of Day Report
+            <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] md:text-xs font-bold px-3 py-2 rounded transition shadow">
+                📋 <span class="hidden sm:inline">End of Day</span> Report
             </button>
         </div>
     </header>
 
-    <!-- Main Workspace Setup -->
-    <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-90px)]">
+    <div class="bg-slate-950 border-b border-slate-800 grid grid-cols-2 lg:hidden shrink-0">
+        <button id="view-panel-btn" onclick="switchMobileView('panel')" class="text-center py-3 text-xs font-bold border-b-2 border-amber-500 text-amber-400 bg-slate-900/50">
+            🎛️ Operations Panel
+        </button>
+        <button id="view-workspace-btn" onclick="switchMobileView('workspace')" class="text-center py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-900/30">
+            ⚡ Workspace Matrix
+        </button>
+    </div>
+
+    <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 w-full">
         
-        <!-- LEFT PANEL: OPERATIONS MANAGEMENT CENTER (4 Columns) -->
-        <section class="lg:col-span-4 flex flex-col gap-4 h-full overflow-hidden">
+        <section id="mobile-left-panel" class="lg:col-span-4 flex flex-col gap-4 h-full min-h-0">
             
-            <!-- Management Panel Control Tabs -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col shrink-0">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col shrink-0 shadow-lg">
                 <div class="flex border-b border-slate-700 pb-2 mb-3 gap-2">
-                    <button id="tab-ticket-btn" onclick="switchFormTab('ticket')" class="flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950 transition">
+                    <button id="tab-ticket-btn" onclick="switchFormTab('ticket')" class="flex-1 text-center py-1.5 rounded text-xs font-bold bg-amber-500 text-slate-950 transition">
                         + Ticket
                     </button>
-                    <button id="tab-tech-btn" onclick="switchFormTab('tech')" class="flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">
+                    <button id="tab-tech-btn" onclick="switchFormTab('tech')" class="flex-1 text-center py-1.5 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition">
                         + Technician
                     </button>
                 </div>
 
-                <!-- Form A: Create New Work Ticket -->
                 <form id="add-ticket-form" onsubmit="handleCreateTicket(event)" class="space-y-2.5">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400">File New Dispatch Ticket</h2>
                     <input type="text" id="form-issue" placeholder="Issue (e.g., Cut Drop Wire, High Attenuation)" required 
@@ -51,27 +53,24 @@
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
                         <select id="form-ticket-location" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-amber-500 location-dropdown">
-                            <!-- Populated dynamically via JS -->
-                        </select>
+                            </select>
                     </div>
                     <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2 rounded transition shadow">
                         Log Ticket to Grid
                     </button>
                 </form>
 
-                <!-- Form B: Register New Field Technician -->
                 <form id="add-tech-form" onsubmit="handleCreateTechnician(event)" class="space-y-2.5 hidden">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-blue-400">Register Field Technician</h2>
                     <input type="text" id="form-tech-name" placeholder="Technician Full Name" required 
                         class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                    <input type="text" id="form-tech-skill" placeholder="Specialization (e.g., Splicing, Fiber, Copper)" required 
+                    <input type="text" id="form-tech-skill" placeholder="Specialization (e.g., Splicing, Fiber)" required 
                         class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                     <div>
-                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Base Station / Hub</label>
+                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Hub Station</label>
                         <select id="form-tech-location" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 location-dropdown">
-                            <!-- Populated dynamically via JS -->
-                        </select>
+                            </select>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded transition shadow">
                         Onboard Field Responder
@@ -79,54 +78,49 @@
                 </form>
             </div>
 
-            <!-- Outage Queue Grid View Container -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col flex-1 overflow-hidden">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col flex-1 min-h-0 shadow-lg">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">📍 Active Grid Tickets</h2>
-                <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+                <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar"></div>
             </div>
         </section>
 
-        <!-- DISPATCH ALGORITHM WORKSPACE (8 Columns) -->
-        <section class="lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full overflow-y-auto">
-            <div id="matrix-workspace">
-                <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
-                    <p class="text-lg mb-1">Select an active Pangasinan node ticket to manage status or dispatch units.</p>
+        <section id="mobile-right-workspace" class="hidden lg:flex lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-4 md:p-6 flex-col h-full min-h-0 overflow-y-auto shadow-lg shadow-black/20">
+            <div id="matrix-workspace" class="h-full">
+                <div class="text-center py-20 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center h-full">
+                    <p class="text-base md:text-lg mb-1 px-4">Select an active Pangasinan node ticket to manage status or deploy responsive crews.</p>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- MODAL POPUP FOR GENERATING DAILY REPORT -->
-    <div id="report-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
+    <div id="report-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-2 md:p-4 animate-fadeIn">
+        <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-4 md:p-6 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                <h2 class="text-lg font-bold text-white">Daily Accomplishment Summary</h2>
-                <button onclick="closeDailyReportModal()" class="text-slate-400 hover:text-white">&times;</button>
+                <h2 class="text-base md:text-lg font-bold text-white">Daily Accomplishment Summary</h2>
+                <button onclick="closeDailyReportModal()" class="text-xl text-slate-400 hover:text-white transition">&times;</button>
             </div>
             
-            <div id="photo-report-container" class="bg-white text-slate-900 p-6 rounded-lg overflow-y-auto flex-1 border border-slate-300">
+            <div id="photo-report-container" class="bg-white text-slate-900 p-4 md:p-6 rounded-lg overflow-y-auto flex-1 border border-slate-300">
                 <div class="border-b-2 border-slate-800 pb-4 mb-4">
-                    <h1 class="text-xl font-black tracking-wide text-slate-900 uppercase">PROVINCIAL OPERATIONS LOG</h1>
-                    <p class="text-xs text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
+                    <h1 class="text-lg md:text-xl font-black tracking-wide text-slate-900 uppercase">PROVINCIAL OPERATIONS LOG</h1>
+                    <p class="text-[10px] text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
                 </div>
 
-                <!-- Dynamic Analytics Summary Boxes -->
-                <div id="report-analytics-bar" class="grid grid-cols-4 gap-2 mb-6 text-center"></div>
+                <div id="report-analytics-bar" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 text-center"></div>
 
                 <div id="report-items-list" class="space-y-4"></div>
             </div>
 
-            <div class="mt-4 flex justify-end space-x-3">
-                <button onclick="closeDailyReportModal()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-xs font-medium">Cancel</button>
-                <button onclick="captureReportAsPhoto()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-bold shadow">
+            <div class="mt-4 flex justify-end space-x-3 shrink-0">
+                <button onclick="closeDailyReportModal()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-xs font-medium transition">Cancel</button>
+                <button onclick="captureReportAsPhoto()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-bold shadow transition">
                     📸 Save to Photo / Gallery
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- System Application Logic -->
     <script>
         const coordinatesMap = {
             "Agno": { lat: 16.1153, lon: 119.7971, fullAddress: "Poblacion, Agno, Pangasinan" },
@@ -156,7 +150,7 @@
             "Malasiqui": { lat: 15.9292, lon: 120.4136, fullAddress: "Poblacion, Malasiqui, Pangasinan" },
             "Manaoag": { lat: 16.0425, lon: 120.4858, fullAddress: "Poblacion, Manaoag, Pangasinan" },
             "Mangaldan": { lat: 16.0683, lon: 120.4019, fullAddress: "Poblacion, Mangaldan, Pangasinan" },
-            "Mangalarem": { lat: 15.7892, lon: 120.2886, fullAddress: "Poblacion, Mangatarem, Pangasinan" },
+            "Mangatarem": { lat: 15.7892, lon: 120.2886, fullAddress: "Poblacion, Mangatarem, Pangasinan" },
             "Mapandan": { lat: 16.0272, lon: 120.4497, fullAddress: "Poblacion, Mapandan, Pangasinan" },
             "Natividad": { lat: 16.0456, lon: 120.7981, fullAddress: "Poblacion, Natividad, Pangasinan" },
             "Pozorrubio": { lat: 16.1111, lon: 120.5408, fullAddress: "Poblacion, Pozorrubio, Pangasinan" },
@@ -180,7 +174,7 @@
         };
 
         let mockTickets = [
-            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 }
+            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333, locationKey: "Dagupan City" }
         ];
 
         const mockTechnicians = [
@@ -188,6 +182,46 @@
         ];
 
         let activeTicketId = null;
+
+        // NEW RESPONSIVE ENGINE: Controls smooth panel toggling on portable screens
+        window.switchMobileView = function(viewTarget) {
+            const leftPanel = document.getElementById('mobile-left-panel');
+            const rightWorkspace = document.getElementById('mobile-right-workspace');
+            const panelBtn = document.getElementById('view-panel-btn');
+            const workspaceBtn = document.getElementById('view-workspace-btn');
+
+            if(viewTarget === 'panel') {
+                leftPanel.classList.remove('hidden');
+                rightWorkspace.classList.add('hidden');
+                panelBtn.className = "text-center py-3 text-xs font-bold border-b-2 border-amber-500 text-amber-400 bg-slate-900/50";
+                workspaceBtn.className = "text-center py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-900/30";
+            } else {
+                leftPanel.classList.add('hidden');
+                rightWorkspace.classList.remove('hidden');
+                rightWorkspace.classList.add('flex');
+                workspaceBtn.className = "text-center py-3 text-xs font-bold border-b-2 border-amber-500 text-amber-400 bg-slate-900/50";
+                panelBtn.className = "text-center py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-900/30";
+            }
+        }
+
+        window.switchFormTab = function(type) {
+            const ticketForm = document.getElementById('add-ticket-form');
+            const techForm = document.getElementById('add-tech-form');
+            const ticketBtn = document.getElementById('tab-ticket-btn');
+            const techBtn = document.getElementById('tab-tech-btn');
+
+            if (type === 'ticket') {
+                ticketForm.classList.remove('hidden');
+                techForm.classList.add('hidden');
+                ticketBtn.className = "flex-1 text-center py-1.5 rounded text-xs font-bold bg-amber-500 text-slate-950";
+                techBtn.className = "flex-1 text-center py-1.5 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
+            } else {
+                ticketForm.classList.add('hidden');
+                techForm.classList.remove('hidden');
+                ticketBtn.className = "flex-1 text-center py-1.5 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
+                techBtn.className = "flex-1 text-center py-1.5 rounded text-xs font-bold bg-blue-600 text-white";
+            }
+        }
 
         function populateDropdowns() {
             const dropdowns = document.querySelectorAll('.location-dropdown');
@@ -206,25 +240,6 @@
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        window.switchFormTab = function(type) {
-            const ticketForm = document.getElementById('add-ticket-form');
-            const techForm = document.getElementById('add-tech-form');
-            const ticketBtn = document.getElementById('tab-ticket-btn');
-            const techBtn = document.getElementById('tab-tech-btn');
-
-            if (type === 'ticket') {
-                ticketForm.classList.remove('hidden');
-                techForm.classList.add('hidden');
-                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-amber-500 text-slate-950";
-                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
-            } else {
-                ticketForm.classList.add('hidden');
-                techForm.classList.remove('hidden');
-                ticketBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600";
-                techBtn.className = "flex-1 text-center py-1 rounded text-xs font-bold bg-blue-600 text-white";
-            }
         }
 
         window.handleCreateTicket = function(event) {
@@ -252,6 +267,9 @@
             document.getElementById('add-ticket-form').reset();
             renderTicketQueue();
             analyzeDispatchMatrix(uniqueId);
+            
+            // Auto-flip view on mobile to show workspace details instantly
+            if(window.innerWidth < 1024) switchMobileView('workspace');
         }
 
         window.handleCreateTechnician = function(event) {
@@ -278,19 +296,17 @@
             if (activeTicketId) analyzeDispatchMatrix(activeTicketId);
         }
 
-        // NEW FEATURE: Delete Ticket Function
         window.deleteTicket = function(event, ticketId) {
-            event.stopPropagation(); // Prevents clicking the delete button from opening the ticket matrix details
+            event.stopPropagation();
             if(confirm("Are you sure you want to completely erase this dispatch ticket?")) {
                 mockTickets = mockTickets.filter(t => t.id !== ticketId);
                 renderTicketQueue();
                 
-                // Reset workspace if the open ticket was the one deleted
                 if (activeTicketId === ticketId) {
                     activeTicketId = null;
                     document.getElementById('matrix-workspace').innerHTML = `
-                        <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
-                            <p class="text-lg mb-1">Select an active Pangasinan node ticket to manage status or dispatch units.</p>
+                        <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center h-full">
+                            <p class="text-base md:text-lg mb-1 px-4">Select an active Pangasinan node ticket to manage status or deploy responsive crews.</p>
                         </div>
                     `;
                 }
@@ -310,15 +326,14 @@
                 if(ticket.status === "COMPLETED") statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
 
                 return `
-                    <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition relative group">
+                    <div onclick="analyzeDispatchMatrix('${ticket.id}'); if(window.innerWidth < 1024) switchMobileView('workspace');" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition relative group shadow-sm">
                         <div class="flex justify-between items-start mb-2 mr-6">
-                            <span class="text-xs px-2 py-0.5 rounded font-medium border ${statusColor}">${ticket.status}</span>
+                            <span class="text-[10px] md:text-xs px-2 py-0.5 rounded font-medium border ${statusColor}">${ticket.status}</span>
                             <span class="text-xs text-slate-500 font-mono">Manage →</span>
                         </div>
-                        <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
+                        <h3 class="font-semibold text-white text-sm mb-1 break-words pr-2">${ticket.issueType}</h3>
                         <p class="text-xs text-slate-400"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
                         
-                        <!-- NEW: Trash Icon overlay for direct grid deletion -->
                         <button onclick="deleteTicket(event, '${ticket.id}')" class="absolute top-3 right-3 text-slate-500 hover:text-red-400 transition text-sm p-1" title="Delete Ticket">
                             🗑️
                         </button>
@@ -339,21 +354,21 @@
             }).sort((a, b) => a.distance - b.distance);
 
             workspace.innerHTML = `
-                <div class="bg-slate-950 p-5 rounded-lg border border-slate-700 mb-6">
-                    <div class="flex justify-between items-start mb-4">
+                <div class="bg-slate-950 p-4 md:p-5 rounded-lg border border-slate-700 mb-6 shadow-md">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <h2 class="text-lg font-bold text-white">${ticket.issueType}</h2>
-                                <button onclick="enableInlineEdit('${ticket.id}')" class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-400 border border-slate-600 transition">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <h2 class="text-base md:text-lg font-bold text-white break-words">${ticket.issueType}</h2>
+                                <button onclick="enableInlineEdit('${ticket.id}')" class="text-[10px] md:text-xs bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-400 border border-slate-600 transition whitespace-nowrap">
                                     ✏️ Edit Info
                                 </button>
                             </div>
-                            <p class="text-sm text-slate-400">📍 ${ticket.address} (${ticket.napTerminalId})</p>
+                            <p class="text-xs md:text-sm text-slate-400 break-words">📍 ${ticket.address} (${ticket.napTerminalId})</p>
                             <p class="text-xs text-slate-500 mt-1">Assigned Tech: <strong class="text-slate-300">${ticket.assignedTech}</strong></p>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
-                            <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="bg-slate-800 border border-slate-600 text-white rounded p-2 text-sm focus:outline-none focus:border-amber-500">
+                        <div class="sm:text-right shrink-0">
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
+                            <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="w-full sm:w-auto bg-slate-800 border border-slate-600 text-white rounded p-1.5 text-xs md:text-sm focus:outline-none focus:border-amber-500">
                                 <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
                                 <option value="IN_PROGRESS" ${ticket.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
                                 <option value="COMPLETED" ${ticket.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
@@ -364,9 +379,9 @@
 
                 ${ticket.status !== 'COMPLETED' ? `
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Deploy Local Field Unit (Total On-Duty: ${mockTechnicians.length})</h3>
-                    <div class="overflow-hidden border border-slate-700 rounded-lg bg-slate-950">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-900 border-b border-slate-700 text-slate-400">
+                    <div class="overflow-x-auto border border-slate-700 rounded-lg bg-slate-950 shadow-inner">
+                        <table class="w-full text-left text-xs md:text-sm min-w-[450px]">
+                            <thead class="bg-slate-900 border-b border-slate-700 text-slate-400 font-medium">
                                 <tr>
                                     <th class="p-3">Technician</th>
                                     <th class="p-3">Distance Matrix</th>
@@ -376,10 +391,13 @@
                             <tbody class="divide-y divide-gray-800">
                                 ${sortedTechs.map(tech => `
                                     <tr>
-                                        <td class="p-3 font-medium text-white">${tech.name} <span class="text-xs block text-slate-500">${tech.currentStation} (${tech.skills.join(', ')})</span></td>
+                                        <td class="p-3 font-medium text-white">
+                                            ${tech.name} 
+                                            <span class="text-[11px] block text-slate-500">${tech.currentStation} (${tech.skills.join(', ')})</span>
+                                        </td>
                                         <td class="p-3 font-mono text-amber-300">${tech.distance.toFixed(2)} km</td>
                                         <td class="p-3 text-right">
-                                            <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1.5 rounded hover:bg-amber-600 transition">
+                                            <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 text-slate-950 font-bold text-[11px] md:text-xs px-2.5 py-1.5 rounded hover:bg-amber-600 transition shadow-sm">
                                                 Assign
                                             </button>
                                         </td>
@@ -388,39 +406,37 @@
                             </tbody>
                         </table>
                     </div>
-                ` : `<div class="p-8 text-center bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400">✓ This maintenance objective has been completely resolved and logged.</div>`}
+                ` : `<div class="p-6 md:p-8 text-center bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm">✓ This maintenance objective has been completely resolved and logged.</div>`}
             `;
         }
 
-        // NEW FEATURE: Swap standard block layout into interactive modification text-inputs
         window.enableInlineEdit = function(ticketId) {
             const ticket = mockTickets.find(t => t.id === ticketId);
             if (!ticket) return;
             const workspace = document.getElementById('matrix-workspace');
 
-            // Set up select items for towns
             const options = Object.keys(coordinatesMap).sort().map(loc => `
                 <option value="${loc}" ${ticket.locationKey === loc || (loc === "Dagupan City" && !ticket.locationKey) ? 'selected' : ''}>${loc}</option>
             `).join('');
 
             workspace.innerHTML = `
-                <div class="bg-slate-950 p-5 rounded-lg border border-amber-500/50 bg-slate-950/60 shadow-2xl">
-                    <h2 class="text-sm font-bold uppercase text-amber-400 mb-3 tracking-wider">✏️ Modify Ticket Entry Settings</h2>
+                <div class="bg-slate-950 p-4 md:p-5 rounded-lg border border-amber-500/50 shadow-2xl">
+                    <h2 class="text-xs md:text-sm font-bold uppercase text-amber-400 mb-3 tracking-wider">✏️ Modify Ticket Entry Settings</h2>
                     <form onsubmit="saveTicketEdits(event, '${ticket.id}')" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-400 mb-1">Reported Issue Description</label>
                             <input type="text" id="edit-issue" value="${ticket.issueType}" required 
-                                class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                                class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs md:text-sm text-white focus:outline-none focus:border-amber-500">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-400 mb-1">NAP Terminal Identifier</label>
                                 <input type="text" id="edit-nap" value="${ticket.napTerminalId}" required 
-                                    class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                                    class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs md:text-sm text-white focus:outline-none focus:border-amber-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-400 mb-1">Geographic Boundary Point</label>
-                                <select id="edit-location" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                                <select id="edit-location" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs md:text-sm text-white focus:outline-none focus:border-amber-500">
                                     ${options}
                                 </select>
                             </div>
@@ -438,7 +454,6 @@
             `;
         }
 
-        // NEW FEATURE: Commit changes, update coordinates and recompute mathematical metrics
         window.saveTicketEdits = function(event, ticketId) {
             event.preventDefault();
             const ticket = mockTickets.find(t => t.id === ticketId);
@@ -450,7 +465,6 @@
 
             const locationData = coordinatesMap[newLocKey];
 
-            // Re-map internal structural parameters safely
             ticket.issueType = newIssue;
             ticket.napTerminalId = newNap.toUpperCase();
             ticket.locationKey = newLocKey;
@@ -459,7 +473,7 @@
             ticket.lon = locationData.lon;
 
             renderTicketQueue();
-            analyzeDispatchMatrix(ticketId); // Instantly reload workspace layout with new metrics active
+            analyzeDispatchMatrix(ticketId);
         }
 
         window.changeTicketStatus = function(ticketId, newStatus) {
@@ -489,35 +503,35 @@
             const pendingCount = mockTickets.filter(t => t.status === 'PENDING').length;
 
             analyticsBar.innerHTML = `
-                <div class="bg-slate-100 p-2 border border-slate-300 rounded">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Overall Tasks</p>
-                    <p class="text-xl font-black text-slate-900">${totalTasks}</p>
+                <div class="bg-slate-100 p-2 border border-slate-300 rounded shadow-sm">
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-tight">Overall Tasks</p>
+                    <p class="text-base md:text-xl font-black text-slate-900">${totalTasks}</p>
                 </div>
-                <div class="bg-emerald-50 p-2 border border-emerald-200 rounded">
-                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Complete</p>
-                    <p class="text-xl font-black text-emerald-700">${completedCount}</p>
+                <div class="bg-emerald-50 p-2 border border-emerald-200 rounded shadow-sm">
+                    <p class="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Complete</p>
+                    <p class="text-base md:text-xl font-black text-emerald-700">${completedCount}</p>
                 </div>
-                <div class="bg-amber-50 p-2 border border-amber-200 rounded">
-                    <p class="text-[10px] font-bold text-amber-600 uppercase tracking-tight">In Progress</p>
-                    <p class="text-xl font-black text-amber-700">${inProgressCount}</p>
+                <div class="bg-amber-50 p-2 border border-amber-200 rounded shadow-sm">
+                    <p class="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-tight">In Progress</p>
+                    <p class="text-base md:text-xl font-black text-amber-700">${inProgressCount}</p>
                 </div>
-                <div class="bg-red-50 p-2 border border-red-200 rounded">
-                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-tight">Pending</p>
-                    <p class="text-xl font-black text-red-700">${pendingCount}</p>
+                <div class="bg-red-50 p-2 border border-red-200 rounded shadow-sm">
+                    <p class="text-[9px] md:text-[10px] font-bold text-red-600 uppercase tracking-tight">Pending</p>
+                    <p class="text-base md:text-xl font-black text-red-700">${pendingCount}</p>
                 </div>
             `;
             
             itemsList.innerHTML = mockTickets.map(t => `
                 <div class="border-b border-slate-200 pb-3 last:border-0">
-                    <div class="flex justify-between items-start">
-                        <h4 class="font-bold text-slate-900 text-sm">${t.issueType}</h4>
-                        <span class="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded ${
+                    <div class="flex justify-between items-start gap-2">
+                        <h4 class="font-bold text-slate-900 text-xs md:text-sm break-words">${t.issueType}</h4>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded whitespace-nowrap ${
                             t.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
                             t.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
                         }">${t.status}</span>
                     </div>
-                    <p class="text-xs text-slate-600 mt-0.5">Terminal Node: ${t.napTerminalId} | Location: ${t.address}</p>
-                    <p class="text-xs text-slate-500">Assigned Tech Unit: ${t.assignedTech}</p>
+                    <p class="text-[11px] text-slate-600 mt-0.5">Terminal: ${t.napTerminalId} | Location: ${t.address}</p>
+                    <p class="text-[11px] text-slate-500">Assigned Tech Unit: ${t.assignedTech}</p>
                 </div>
             `).join('');
         }
@@ -541,5 +555,18 @@
         populateDropdowns();
         renderTicketQueue();
     </script>
+
+    <style>
+        /* Clean scrollbar overrides for better UI presentation */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.15s ease-out forwards; }
+    </style>
 </body>
 </html>
