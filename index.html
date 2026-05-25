@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pangasinan Full-Grid Telecom Dispatch Engine</title>
+    <title>EM-AMEN Pangasinan Full-Grid Telecom Dispatch Engine</title>
+    <!-- Tailwind CSS for sleek layout styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTML2Canvas Library to convert HTML components into downloadable images/photos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased flex flex-col h-screen overflow-hidden">
 
+    <!-- Top Regional Operations Header -->
     <header class="bg-slate-800 border-b border-slate-700 p-4 shrink-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-sm md:text-xl font-bold text-amber-400 tracking-wide flex items-center gap-1">🛰️ <span class="hidden sm:inline">PANGASINAN</span> TELECOM DISPATCH</h1>
+                <h1 class="text-sm md:text-xl font-bold text-amber-400 tracking-wide flex items-center gap-1">🛰️ <span class="hidden sm:inline">EM-AMEN PANGASINAN</span> TELECOM DISPATCH</h1>
                 <p class="text-[10px] md:text-xs text-slate-400">48 Municipalities & Cities Fully Integrated</p>
             </div>
             <div class="flex items-center gap-2">
@@ -26,6 +29,7 @@
         </div>
     </header>
 
+    <!-- MOBILE NAVIGATION TABS (Visible only on mobile/tablet screens to toggle between panels) -->
     <div class="bg-slate-950 border-b border-slate-800 grid grid-cols-2 lg:hidden shrink-0">
         <button id="view-panel-btn" onclick="switchMobileView('panel')" class="text-center py-3 text-xs font-bold border-b-2 border-amber-500 text-amber-400 bg-slate-900/50">
             🎛️ Operations Panel
@@ -35,10 +39,13 @@
         </button>
     </div>
 
+    <!-- Main Workspace Setup -->
     <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 w-full">
         
+        <!-- LEFT PANEL: OPERATIONS MANAGEMENT CENTER (4 Columns) -->
         <section id="mobile-left-panel" class="lg:col-span-4 flex flex-col gap-4 h-full min-h-0">
             
+            <!-- Management Panel Control Tabs -->
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col shrink-0 shadow-lg">
                 <div class="flex border-b border-slate-700 pb-2 mb-3 gap-2">
                     <button id="tab-ticket-btn" onclick="switchFormTab('ticket')" class="flex-1 text-center py-1.5 rounded text-xs font-bold bg-amber-500 text-slate-950 transition">
@@ -49,6 +56,7 @@
                     </button>
                 </div>
 
+                <!-- Form A: Create New Work Ticket -->
                 <form id="add-ticket-form" onsubmit="handleCreateTicket(event)" class="space-y-2.5">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400">File New Dispatch Ticket</h2>
                     <input type="text" id="form-issue" placeholder="Issue (e.g., Cut Drop Wire, High Attenuation)" required 
@@ -58,13 +66,15 @@
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
                         <select id="form-ticket-location" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-amber-500 location-dropdown">
-                            </select>
+                            <!-- Populated dynamically via JS -->
+                        </select>
                     </div>
                     <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2 rounded transition shadow">
                         Log Ticket to Grid
                     </button>
                 </form>
 
+                <!-- Form B: Register New Field Technician -->
                 <form id="add-tech-form" onsubmit="handleCreateTechnician(event)" class="space-y-2.5 hidden">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-blue-400">Register Field Technician</h2>
                     <input type="text" id="form-tech-name" placeholder="Technician Full Name" required 
@@ -75,7 +85,8 @@
                         <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Assigned Hub Station</label>
                         <select id="form-tech-location" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 location-dropdown">
-                            </select>
+                            <!-- Populated dynamically via JS -->
+                        </select>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded transition shadow">
                         Onboard Field Responder
@@ -83,6 +94,7 @@
                 </form>
             </div>
 
+            <!-- Outage Queue Grid View Container -->
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col flex-1 min-h-0 shadow-lg">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">📍 Active Grid Tickets</h2>
@@ -94,6 +106,7 @@
             </div>
         </section>
 
+        <!-- DISPATCH ALGORITHM WORKSPACE (8 Columns) -->
         <section id="mobile-right-workspace" class="hidden lg:flex lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-4 md:p-6 flex-col h-full min-h-0 overflow-y-auto shadow-lg shadow-black/20">
             <div id="matrix-workspace" class="h-full">
                 <div class="text-center py-20 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center h-full">
@@ -104,6 +117,7 @@
 
     </main>
 
+    <!-- TRANSACTION DATABASE LEDGER HISTORY MODAL -->
     <div id="database-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-2 md:p-4 animate-fadeIn">
         <div class="bg-slate-800 border border-slate-700 max-w-4xl w-full rounded-xl p-4 md:p-6 shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -125,7 +139,8 @@
                         </tr>
                     </thead>
                     <tbody id="database-ledger-rows" class="divide-y divide-slate-800 text-slate-300">
-                        </tbody>
+                        <!-- Filled dynamically -->
+                    </tbody>
                 </table>
             </div>
 
@@ -140,6 +155,7 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP FOR GENERATING DAILY REPORT -->
     <div id="report-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-2 md:p-4 animate-fadeIn">
         <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-4 md:p-6 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -153,6 +169,7 @@
                     <p class="text-[10px] text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
                 </div>
 
+                <!-- Dynamic Analytics Summary Boxes -->
                 <div id="report-analytics-bar" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 text-center"></div>
 
                 <div id="report-items-list" class="space-y-4"></div>
@@ -167,6 +184,7 @@
         </div>
     </div>
 
+    <!-- System Application Logic -->
     <script>
         const coordinatesMap = {
             "Agno": { lat: 16.1153, lon: 119.7971, fullAddress: "Poblacion, Agno, Pangasinan" },
@@ -202,7 +220,7 @@
             "Pozorrubio": { lat: 16.1111, lon: 120.5408, fullAddress: "Poblacion, Pozorrubio, Pangasinan" },
             "Rosales": { lat: 15.8903, lon: 120.6353, fullAddress: "Poblacion, Rosales, Pangasinan" },
             "San Carlos City": { lat: 15.9272, lon: 120.3489, fullAddress: "Roxas Blvd, San Carlos City, Pangasinan" },
-            "San Fabian": { lat: 16.1256, font: 120.4042, fullAddress: "Poblacion, San Fabian, Pangasinan" },
+            "San Fabian": { lat: 16.1256, lon: 120.4042, fullAddress: "Poblacion, San Fabian, Pangasinan" },
             "San Jacinto": { lat: 16.0717, lon: 120.4419, fullAddress: "Poblacion, San Jacinto, Pangasinan" },
             "San Manuel": { lat: 16.0658, lon: 120.6675, fullAddress: "Poblacion, San Manuel, Pangasinan" },
             "San Nicolas": { lat: 16.0694, lon: 120.7644, fullAddress: "Poblacion, San Nicolas, Pangasinan" },
@@ -220,7 +238,7 @@
         };
 
         const defaultTickets = [
-            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333, locationKey: "Dagupan City" }
+            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333, locationKey: "Dagupan City", remarks: "" }
         ];
 
         const defaultTechnicians = [
@@ -230,8 +248,6 @@
         // Core Data Initialization
         let mockTickets = JSON.parse(localStorage.getItem('pangasinan_tickets')) || defaultTickets;
         let mockTechnicians = JSON.parse(localStorage.getItem('pangasinan_technicians')) || defaultTechnicians;
-        
-        // NEW LEDGER INITIALIZER: Loads the transaction log database array safely on execution
         let transactionDatabase = JSON.parse(localStorage.getItem('pangasinan_transactions')) || [];
         let activeTicketId = null;
 
@@ -241,7 +257,6 @@
             localStorage.setItem('pangasinan_transactions', JSON.stringify(transactionDatabase));
         }
 
-        // NEW LOGGER ENGINE: Logs operations to the database ledger with structured timestamps
         function appendTransactionLog(actionType, targetAsset, description) {
             const timestamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
             transactionDatabase.unshift({
@@ -330,12 +345,11 @@
                 assignedTech: "Unassigned",
                 lat: locationData.lat,
                 lon: locationData.lon,
-                locationKey: locationKey
+                locationKey: locationKey,
+                remarks: ""
             });
 
-            // Log entry into the historical ledger database
             appendTransactionLog("TICKET_CREATED", napId.toUpperCase(), `Filed: ${issue} in ${locationKey}`);
-            
             document.getElementById('add-ticket-form').reset();
             renderTicketQueue();
             analyzeDispatchMatrix(uniqueId);
@@ -395,7 +409,6 @@
             `;
         }
 
-        // NEW ADJUSTMENT: Clears workspace visuals cleanly while safeguarding transaction logs
         window.clearActiveGridOnly = function() {
             if(confirm("Clear Workspace? This safely empties active display entries without touching your permanent Ledger database.")) {
                 mockTickets = [];
@@ -407,7 +420,6 @@
             }
         }
 
-        // NEW DATABASE UTILITY: Complete wipe hook for deep data master clearing
         window.wipeEntireDatabaseSystem = function() {
             if(confirm("CRITICAL: You are about to permanently erase the complete Transaction Ledger Database history. This action cannot be undone. Proceed?")) {
                 localStorage.clear();
@@ -423,7 +435,6 @@
             }
         }
 
-        // NEW DISPLAY MODAL TRIGGERS
         window.openTransactionDatabaseModal = function() {
             document.getElementById('database-modal').classList.remove('hidden');
             const ledgerRows = document.getElementById('database-ledger-rows');
@@ -466,6 +477,7 @@
                 let statusColor = "bg-red-500/10 text-red-400 border-red-500/20";
                 if(ticket.status === "IN_PROGRESS") statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
                 if(ticket.status === "COMPLETED") statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                if(ticket.status === "CANCELLED") statusColor = "bg-slate-700/30 text-slate-400 border-slate-700";
 
                 return `
                     <div onclick="analyzeDispatchMatrix('${ticket.id}'); if(window.innerWidth < 1024) switchMobileView('workspace');" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition relative group shadow-sm">
@@ -475,6 +487,7 @@
                         </div>
                         <h3 class="font-semibold text-white text-sm mb-1 break-words pr-2">${ticket.issueType}</h3>
                         <p class="text-xs text-slate-400"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
+                        ${ticket.remarks ? `<p class="text-[11px] text-red-400/80 mt-1 italic line-clamp-1">⚠️ ${ticket.remarks}</p>` : ''}
                         
                         <button onclick="deleteTicket(event, '${ticket.id}')" class="absolute top-3 right-3 text-slate-500 hover:text-red-400 transition text-sm p-1" title="Delete Ticket">
                             🗑️
@@ -514,12 +527,21 @@
                                 <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
                                 <option value="IN_PROGRESS" ${ticket.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
                                 <option value="COMPLETED" ${ticket.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+                                <option value="CANCELLED" ${ticket.status === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- NEW VISUAL BLOCK: Displays cancellation reason directly inside active workspace dashboard -->
+                    ${ticket.status === 'CANCELLED' && ticket.remarks ? `
+                        <div class="mt-4 p-3 bg-red-950/40 border border-red-900/60 rounded text-xs">
+                            <span class="text-red-400 font-bold block mb-0.5">🚫 Reason for Cancellation:</span>
+                            <p class="text-slate-300 italic">"${ticket.remarks}"</p>
+                        </div>
+                    ` : ''}
                 </div>
 
-                ${ticket.status !== 'COMPLETED' ? `
+                ${ticket.status !== 'COMPLETED' && ticket.status !== 'CANCELLED' ? `
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Deploy Local Field Unit (Total On-Duty: ${mockTechnicians.length})</h3>
                     <div class="overflow-x-auto border border-slate-700 rounded-lg bg-slate-950 shadow-inner">
                         <table class="w-full text-left text-xs md:text-sm min-w-[450px]">
@@ -548,7 +570,11 @@
                             </tbody>
                         </table>
                     </div>
-                ` : `<div class="p-6 md:p-8 text-center bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm">✓ This maintenance objective has been completely resolved and logged.</div>`}
+                ` : ticket.status === 'COMPLETED' ? `
+                    <div class="p-6 md:p-8 text-center bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm">✓ This maintenance objective has been completely resolved and logged.</div>
+                ` : `
+                    <div class="p-6 md:p-8 text-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-sm">🛑 This ticket status is set to Cancelled. Clear or modify settings to reactivate.</div>
+                `}
             `;
         }
 
@@ -620,12 +646,30 @@
             analyzeDispatchMatrix(ticketId);
         }
 
+        // UPGRADED REGULATOR LOGIC: Intercepts selection state to trap cancellation metrics
         window.changeTicketStatus = function(ticketId, newStatus) {
             const ticket = mockTickets.find(t => t.id === ticketId);
+            if(!ticket) return;
             const oldStatus = ticket.status;
+            
+            if(newStatus === "CANCELLED") {
+                const operatorReason = prompt("Enter a brief remark stating why this dispatch ticket is being cancelled:", ticket.remarks || "");
+                if (operatorReason === null) {
+                    // Operator pressed cancel, revert select element state layout
+                    analyzeDispatchMatrix(ticketId);
+                    return;
+                }
+                ticket.remarks = operatorReason.trim() || "No remark provided.";
+            } else {
+                // If moving away from Cancelled status, clean up old remark text references
+                ticket.remarks = "";
+            }
+
             ticket.status = newStatus;
             
-            appendTransactionLog("STATUS_CHANGED", ticket.napTerminalId, `Shifted state from ${oldStatus} to ${newStatus}`);
+            const databaseMetaString = newStatus === "CANCELLED" ? `Status changed to CANCELLED. Reason: ${ticket.remarks}` : `Shifted state from ${oldStatus} to ${newStatus}`;
+            appendTransactionLog("STATUS_CHANGED", ticket.napTerminalId, databaseMetaString);
+            
             renderTicketQueue();
             analyzeDispatchMatrix(ticketId);
         }
@@ -635,6 +679,7 @@
             const ticket = mockTickets.find(t => t.id === ticketId);
             ticket.assignedTech = tech.name;
             ticket.status = "IN_PROGRESS";
+            ticket.remarks = ""; // Clear out cancellation remarks if reassigned/redeployed
             
             appendTransactionLog("CREW_DEPLOYED", ticket.napTerminalId, `Assigned responder unit ${tech.name} to asset location point.`);
             renderTicketQueue();
@@ -649,8 +694,9 @@
             const totalTasks = mockTickets.length;
             const completedCount = mockTickets.filter(t => t.status === 'COMPLETED').length;
             const inProgressCount = mockTickets.filter(t => t.status === 'IN_PROGRESS').length;
-            const pendingCount = mockTickets.filter(t => t.status === 'PENDING').length;
+            const cancelledCount = mockTickets.filter(t => t.status === 'CANCELLED').length;
 
+            // Updated bottom telemetry block to account for the tracking data shifts
             analyticsBar.innerHTML = `
                 <div class="bg-slate-100 p-2 border border-slate-300 rounded shadow-sm">
                     <p class="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-tight">Overall Tasks</p>
@@ -664,9 +710,9 @@
                     <p class="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-tight">In Progress</p>
                     <p class="text-base md:text-xl font-black text-amber-700">${inProgressCount}</p>
                 </div>
-                <div class="bg-red-50 p-2 border border-red-200 rounded shadow-sm">
-                    <p class="text-[9px] md:text-[10px] font-bold text-red-600 uppercase tracking-tight">Pending</p>
-                    <p class="text-base md:text-xl font-black text-red-700">${pendingCount}</p>
+                <div class="bg-slate-100 p-2 border border-slate-300 rounded shadow-sm">
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-600 uppercase tracking-tight">Cancelled</p>
+                    <p class="text-base md:text-xl font-black text-slate-700">${cancelledCount}</p>
                 </div>
             `;
             
@@ -676,11 +722,13 @@
                         <h4 class="font-bold text-slate-900 text-xs md:text-sm break-words">${t.issueType}</h4>
                         <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded whitespace-nowrap ${
                             t.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
-                            t.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                            t.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 
+                            t.status === 'CANCELLED' ? 'bg-slate-200 text-slate-800' : 'bg-red-100 text-red-800'
                         }">${t.status}</span>
                     </div>
                     <p class="text-[11px] text-slate-600 mt-0.5">Terminal: ${t.napTerminalId} | Location: ${t.address}</p>
                     <p class="text-[11px] text-slate-500">Assigned Tech Unit: ${t.assignedTech}</p>
+                    ${t.remarks ? `<p class="text-[11px] font-medium text-red-700 mt-1 bg-red-50 p-1.5 rounded border border-red-100 italic">Remarks: "${t.remarks}"</p>` : ''}
                 </div>
             `).join('');
         }
