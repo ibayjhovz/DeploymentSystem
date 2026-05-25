@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pangasinan Telecom Dispatch Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased">
 
@@ -14,183 +15,204 @@
                 <h1 class="text-xl font-bold text-amber-400 tracking-wide">🛰️ PANGASINAN TELECOM DISPATCH</h1>
                 <p class="text-xs text-slate-400">Region I Core Field Operations Engine</p>
             </div>
-            <div class="flex space-x-6 text-sm">
-                <div>Grid Status: <span class="text-emerald-400 font-semibold">● ACTIVE</span></div>
-                <div>Crews On-Duty: <span id="crew-count" class="text-white font-semibold">3 Units</span></div>
-            </div>
+            <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow">
+                📋 End of Day Report
+            </button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-90px)]">
         
         <section class="lg:col-span-4 bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col h-full">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">
                 📍 Active Provincial Tickets
             </h2>
-            <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1">
-                </div>
+            <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
         </section>
 
-        <section class="lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full justify-between">
+        <section class="lg:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col h-full overflow-y-auto">
             <div id="matrix-workspace">
                 <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
-                    <p class="text-lg mb-1">Select an active Pangasinan node ticket to view closest field responders.</p>
-                    <p class="text-xs text-slate-600">Calculations will prioritize dispatch units within nearby municipalities.</p>
+                    <p class="text-lg mb-1">Select an active Pangasinan node ticket to manage status or dispatch units.</p>
                 </div>
             </div>
         </section>
 
     </main>
 
+    <div id="report-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                <h2 class="text-lg font-bold text-white">Daily Accomplishment Summary</h2>
+                <button onclick="closeDailyReportModal()" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div id="photo-report-container" class="bg-white text-slate-900 p-6 rounded-lg overflow-y-auto flex-1 border border-slate-300">
+                <div class="border-b-2 border-slate-800 pb-4 mb-4">
+                    <h1 class="text-xl font-black tracking-wide text-slate-900 uppercase">PROVINCIAL OPERATIONS LOG</h1>
+                    <p class="text-xs text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
+                </div>
+                <div id="report-items-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="mt-4 flex justify-end space-x-3">
+                <button onclick="closeDailyReportModal()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-xs font-medium">Cancel</button>
+                <button onclick="captureReportAsPhoto()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-bold shadow">
+                    📸 Save to Photo / Gallery
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // High-precision coordinates mapped directly within localized boundaries of Pangasinan
+        // Internal State Database Layer
         const mockTickets = [
-            { 
-                id: "t1", 
-                customerName: "Dagupan Hub", 
-                address: "AB Fernandez Ave, Dagupan City, Pangasinan", 
-                napTerminalId: "NAP-DAG-012", 
-                issueType: "Main Fiber Trunk Line Cut (FTTH)", 
-                lat: 16.0433, 
-                lon: 120.3333 
-            },
-            { 
-                id: "t2", 
-                customerName: "Urdaneta Business Center", 
-                address: "McArthur Highway, Urdaneta City, Pangasinan", 
-                napTerminalId: "NAP-URD-088", 
-                issueType: "High Optical Signal Loss (-29dBm)", 
-                lat: 15.9758, 
-                lon: 120.5692 
-            },
-            { 
-                id: "t3", 
-                customerName: "Lingayen Coastal Node", 
-                address: "Poblacion, Lingayen, Pangasinan", 
-                napTerminalId: "NAP-LIN-045", 
-                issueType: "Modem Activation Loop Error", 
-                lat: 16.0204, 
-                lon: 120.2335 
-            }
+            { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City", napTerminalId: "NAP-DAG-012", issueType: "Main Fiber Trunk Line Cut (FTTH)", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 },
+            { id: "t2", customerName: "Urdaneta Business Center", address: "McArthur Highway, Urdaneta City", napTerminalId: "NAP-URD-088", issueType: "High Optical Signal Loss (-29dBm)", status: "PENDING", assignedTech: "Unassigned", lat: 15.9758, lon: 120.5692 },
+            { id: "t3", customerName: "Lingayen Coastal Node", address: "Poblacion, Lingayen", napTerminalId: "NAP-LIN-045", issueType: "Modem Activation Loop Error", status: "PENDING", assignedTech: "Unassigned", lat: 16.0204, lon: 120.2335 }
         ];
 
         const mockTechnicians = [
-            { 
-                id: "tech1", 
-                name: "Juan Dela Cruz (Splicing Specialist)", 
-                status: "IDLE", 
-                currentStation: "Urdaneta Base",
-                lat: 15.9760, 
-                lon: 120.5710, 
-                skills: ["Fiber Splicing", "ODTR Testing"] 
-            },
-            { 
-                id: "tech2", 
-                name: "Mark Santos (FTTH Installer)", 
-                status: "IDLE", 
-                currentStation: "Calasiao Patrol Zone",
-                lat: 16.0075, 
-                lon: 120.3614, 
-                skills: ["Modem Provisioning", "Drop Wire Repair"] 
-            },
-            { 
-                id: "tech3", 
-                name: "Rudy Aquino (Heavy Infrastructure Team)", 
-                status: "ON_SITE", 
-                currentStation: "San Carlos Service Link",
-                lat: 15.9272, 
-                lon: 120.3489, 
-                skills: ["OLT Maintenance", "Coaxial Trunk Line"] 
-            }
+            { id: "tech1", name: "Juan Dela Cruz", status: "IDLE", currentStation: "Urdaneta Base", lat: 15.9760, lon: 120.5710, skills: ["Fiber Splicing"] },
+            { id: "tech2", name: "Mark Santos", status: "IDLE", currentStation: "Calasiao Patrol Zone", lat: 16.0075, lon: 120.3614, skills: ["Modem Provisioning"] }
         ];
 
-        // Haversine formula calculation logic to determine proximity across the province
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth's Radius in KM
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // Render localized tickets into UI sidebar list container
         function renderTicketQueue() {
             const queueContainer = document.getElementById('ticket-queue');
-            queueContainer.innerHTML = mockTickets.map(ticket => `
-                <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition group">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded font-medium border border-red-500/20">🚨 Service Outage</span>
-                        <span class="text-xs text-slate-500 group-hover:text-amber-400 font-mono transition">Analyze Matrix →</span>
+            queueContainer.innerHTML = mockTickets.map(ticket => {
+                let statusColor = "bg-red-500/10 text-red-400 border-red-500/20";
+                if(ticket.status === "IN_PROGRESS") statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                if(ticket.status === "COMPLETED") statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+
+                return `
+                    <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs px-2 py-0.5 rounded font-medium border ${statusColor}">${ticket.status}</span>
+                            <span class="text-xs text-slate-500 font-mono">Manage →</span>
+                        </div>
+                        <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
+                        <p class="text-xs text-slate-400"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
-                    <p class="text-xs text-slate-400 mb-1"><strong>Node ID:</strong> ${ticket.napTerminalId}</p>
-                    <p class="text-xs text-slate-500 truncate">📍 ${ticket.address}</p>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Run geographic optimization matrix mapping
         window.analyzeDispatchMatrix = function(ticketId) {
             const ticket = mockTickets.find(t => t.id === ticketId);
             const workspace = document.getElementById('matrix-workspace');
 
-            // Map distances based on coordinates relative to target town center
             const sortedTechs = mockTechnicians.map(tech => {
                 const distance = calculateDistance(ticket.lat, ticket.lon, tech.lat, tech.lon);
                 return { ...tech, distance };
             }).sort((a, b) => a.distance - b.distance);
 
             workspace.innerHTML = `
-                <div class="mb-6 bg-slate-950 p-4 rounded-lg border border-slate-700">
-                    <div class="text-xs font-bold tracking-wider text-amber-400 uppercase mb-1">Target Infrastructure Terminal</div>
-                    <h2 class="text-lg font-bold text-white mb-1">${ticket.issueType}</h2>
-                    <p class="text-sm text-slate-300 mb-1">📍 ${ticket.address}</p>
-                    <p class="text-xs text-slate-500 font-mono">Node Coordinates: ${ticket.lat.toFixed(4)}° N, ${ticket.lon.toFixed(4)}° E</p>
+                <div class="bg-slate-950 p-4 rounded-lg border border-slate-700 mb-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">${ticket.issueType}</h2>
+                        <p class="text-sm text-slate-400">📍 ${ticket.address} (${ticket.napTerminalId})</p>
+                        <p class="text-xs text-slate-500 mt-1">Assigned Tech: <strong class="text-slate-300">${ticket.assignedTech}</strong></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
+                        <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="bg-slate-800 border border-slate-600 text-white rounded p-2 text-sm focus:outline-none focus:border-amber-500">
+                            <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                            <option value="IN_PROGRESS" ${ticket.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
+                            <option value="COMPLETED" ${ticket.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+                        </select>
+                    </div>
                 </div>
 
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Geospatial Routing (Nearest Pangasinan Team First)</h3>
-                <div class="overflow-hidden border border-slate-700 rounded-lg bg-slate-950">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-900 border-b border-slate-700 text-slate-400 font-medium">
-                            <tr>
-                                <th class="p-3">Field Responder / Unit</th>
-                                <th class="p-3">Last Known Station</th>
-                                <th class="p-3">Proximity Distance</th>
-                                <th class="p-3 text-right">Deployment Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-800">
-                            ${sortedTechs.map(tech => `
+                ${ticket.status !== 'COMPLETED' ? `
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Deploy Local Field Unit</h3>
+                    <div class="overflow-hidden border border-slate-700 rounded-lg bg-slate-950">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-900 border-b border-slate-700 text-slate-400">
                                 <tr>
-                                    <td class="p-3 font-medium text-white">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-2 h-2 rounded-full ${tech.status === 'IDLE' ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
-                                            ${tech.name}
-                                        </div>
-                                        <div class="text-xs text-slate-500 mt-0.5">${tech.skills.join(', ')}</div>
-                                    </td>
-                                    <td class="p-3 text-slate-300">${tech.currentStation}</td>
-                                    <td class="p-3 font-mono text-amber-300 font-semibold">${tech.distance.toFixed(2)} km away</td>
-                                    <td class="p-3 text-right">
-                                        <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3 py-1.5 rounded transition shadow-md">
-                                            Deploy Unit
-                                        </button>
-                                    </td>
+                                    <th class="p-3">Technician</th>
+                                    <th class="p-3">Distance</th>
+                                    <th class="p-3 text-right">Action</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800">
+                                ${sortedTechs.map(tech => `
+                                    <tr>
+                                        <td class="p-3 font-medium text-white">${tech.name} <span class="text-xs block text-slate-500">${tech.currentStation}</span></td>
+                                        <td class="p-3 font-mono text-amber-300">${tech.distance.toFixed(2)} km</td>
+                                        <td class="p-3 text-right">
+                                            <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1.5 rounded hover:bg-amber-600 transition">
+                                                Assign
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : `<div class="p-8 text-center bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400">✓ This maintenance objective has been completely resolved and logged.</div>`}
             `;
+        }
+
+        window.changeTicketStatus = function(ticketId, newStatus) {
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            ticket.status = newStatus;
+            renderTicketQueue();
+            analyzeDispatchMatrix(ticketId);
         }
 
         window.deployCrew = function(techId, ticketId) {
             const tech = mockTechnicians.find(t => t.id === techId);
             const ticket = mockTickets.find(t => t.id === ticketId);
-            alert(`🚨 DISPATCH SUCCESSFUL:\n\n${tech.name} has been routed to ${ticket.customerName} located at ${ticket.address}.\n\nEstimated ETA calculations generated via provincial network layout grids.`);
+            ticket.assignedTech = tech.name;
+            ticket.status = "IN_PROGRESS";
+            renderTicketQueue();
+            analyzeDispatchMatrix(ticketId);
         }
 
-        // Initialize provincial system variables on app mount
+        // Generate dynamic HTML layout structure for the End-of-Day report
+        window.openDailyReportModal = function() {
+            document.getElementById('report-modal').classList.remove('hidden');
+            const itemsList = document.getElementById('report-items-list');
+            
+            itemsList.innerHTML = mockTickets.map(t => `
+                <div class="border-b border-slate-200 pb-3 last:border-0">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-slate-900 text-sm">${t.issueType}</h4>
+                        <span class="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded ${t.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${t.status}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">Terminal Node: ${t.napTerminalId} | Location: ${t.address}</p>
+                    <p class="text-xs text-slate-500">Assigned Tech Unit: ${t.assignedTech}</p>
+                </div>
+            `).join('');
+        }
+
+        window.closeDailyReportModal = function() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        // HTML2Canvas Core: Snaps the white container box element and downloads it as an image file
+        window.captureReportAsPhoto = function() {
+            const reportTarget = document.getElementById('photo-report-container');
+            
+            html2canvas(reportTarget, { scale: 2 }).then(canvas => {
+                const imageFile = canvas.toDataURL("image/png");
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageFile;
+                downloadLink.download = `Pangasinan_Telecom_Daily_Report_${new Date().toISOString().split('T')[0]}.png`;
+                downloadLink.click();
+            });
+        }
+
         renderTicketQueue();
     </script>
 </body>
