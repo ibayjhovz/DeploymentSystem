@@ -15,9 +15,14 @@
                 <h1 class="text-sm md:text-xl font-bold text-amber-400 tracking-wide flex items-center gap-1">🛰️ <span class="hidden sm:inline">PANGASINAN</span> TELECOM DISPATCH</h1>
                 <p class="text-[10px] md:text-xs text-slate-400">48 Municipalities & Cities Fully Integrated</p>
             </div>
-            <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] md:text-xs font-bold px-3 py-2 rounded transition shadow">
-                📋 <span class="hidden sm:inline">End of Day</span> Report
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="openTransactionDatabaseModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[11px] md:text-xs font-bold px-3 py-2 rounded transition shadow">
+                    📜 Ledger Log
+                </button>
+                <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] md:text-xs font-bold px-3 py-2 rounded transition shadow">
+                    📋 <span class="hidden sm:inline">End of Day</span> Report
+                </button>
+            </div>
         </div>
     </header>
 
@@ -79,7 +84,12 @@
             </div>
 
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col flex-1 min-h-0 shadow-lg">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">📍 Active Grid Tickets</h2>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">📍 Active Grid Tickets</h2>
+                    <button onclick="clearActiveGridOnly()" class="text-[10px] bg-slate-900 hover:bg-slate-700 border border-slate-700 px-2 py-0.5 rounded text-slate-300 transition">
+                        Clear Workspace
+                    </button>
+                </div>
                 <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar"></div>
             </div>
         </section>
@@ -93,6 +103,42 @@
         </section>
 
     </main>
+
+    <div id="database-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-2 md:p-4 animate-fadeIn">
+        <div class="bg-slate-800 border border-slate-700 max-w-4xl w-full rounded-xl p-4 md:p-6 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-white flex items-center gap-2">📜 Transaction History Ledger</h2>
+                    <p class="text-[11px] text-slate-400">Permanent timeline registration database for all structural actions.</p>
+                </div>
+                <button onclick="closeTransactionDatabaseModal()" class="text-xl text-slate-400 hover:text-white transition">&times;</button>
+            </div>
+            
+            <div class="overflow-x-auto border border-slate-700 rounded-lg bg-slate-950 flex-1 min-h-0 custom-scrollbar">
+                <table class="w-full text-left text-xs md:text-sm min-w-[650px] relative">
+                    <thead class="bg-slate-900 text-slate-400 font-medium sticky top-0 border-b border-slate-700 z-10">
+                        <tr>
+                            <th class="p-3">Timestamp Code</th>
+                            <th class="p-3">Event Action</th>
+                            <th class="p-3">Target Node Asset</th>
+                            <th class="p-3">Meta Log Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody id="database-ledger-rows" class="divide-y divide-slate-800 text-slate-300">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center shrink-0">
+                <button onclick="wipeEntireDatabaseSystem()" class="bg-red-950 border border-red-800 hover:bg-red-900 text-red-400 px-3 py-1.5 rounded text-xs transition">
+                    Wipe Entire System Database
+                </button>
+                <button onclick="closeTransactionDatabaseModal()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-medium transition">
+                    Exit Viewer
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="report-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-2 md:p-4 animate-fadeIn">
         <div class="bg-slate-800 border border-slate-700 max-w-2xl w-full rounded-xl p-4 md:p-6 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
@@ -156,7 +202,7 @@
             "Pozorrubio": { lat: 16.1111, lon: 120.5408, fullAddress: "Poblacion, Pozorrubio, Pangasinan" },
             "Rosales": { lat: 15.8903, lon: 120.6353, fullAddress: "Poblacion, Rosales, Pangasinan" },
             "San Carlos City": { lat: 15.9272, lon: 120.3489, fullAddress: "Roxas Blvd, San Carlos City, Pangasinan" },
-            "San Fabian": { lat: 16.1256, lon: 120.4042, fullAddress: "Poblacion, San Fabian, Pangasinan" },
+            "San Fabian": { lat: 16.1256, font: 120.4042, fullAddress: "Poblacion, San Fabian, Pangasinan" },
             "San Jacinto": { lat: 16.0717, lon: 120.4419, fullAddress: "Poblacion, San Jacinto, Pangasinan" },
             "San Manuel": { lat: 16.0658, lon: 120.6675, fullAddress: "Poblacion, San Manuel, Pangasinan" },
             "San Nicolas": { lat: 16.0694, lon: 120.7644, fullAddress: "Poblacion, San Nicolas, Pangasinan" },
@@ -173,17 +219,40 @@
             "Villasis": { lat: 15.9019, lon: 120.5878, fullAddress: "Poblacion, Villasis, Pangasinan" }
         };
 
-        let mockTickets = [
+        const defaultTickets = [
             { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333, locationKey: "Dagupan City" }
         ];
 
-        const mockTechnicians = [
+        const defaultTechnicians = [
             { id: "tech1", name: "Juan Dela Cruz", status: "IDLE", currentStation: "Urdaneta City Base", lat: 15.9758, lon: 120.5692, skills: ["Fiber Splicing"] }
         ];
 
+        // Core Data Initialization
+        let mockTickets = JSON.parse(localStorage.getItem('pangasinan_tickets')) || defaultTickets;
+        let mockTechnicians = JSON.parse(localStorage.getItem('pangasinan_technicians')) || defaultTechnicians;
+        
+        // NEW LEDGER INITIALIZER: Loads the transaction log database array safely on execution
+        let transactionDatabase = JSON.parse(localStorage.getItem('pangasinan_transactions')) || [];
         let activeTicketId = null;
 
-        // NEW RESPONSIVE ENGINE: Controls smooth panel toggling on portable screens
+        function commitToDatabase() {
+            localStorage.setItem('pangasinan_tickets', JSON.stringify(mockTickets));
+            localStorage.setItem('pangasinan_technicians', JSON.stringify(mockTechnicians));
+            localStorage.setItem('pangasinan_transactions', JSON.stringify(transactionDatabase));
+        }
+
+        // NEW LOGGER ENGINE: Logs operations to the database ledger with structured timestamps
+        function appendTransactionLog(actionType, targetAsset, description) {
+            const timestamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+            transactionDatabase.unshift({
+                timestamp,
+                action: actionType.toUpperCase(),
+                asset: targetAsset,
+                desc: description
+            });
+            commitToDatabase();
+        }
+
         window.switchMobileView = function(viewTarget) {
             const leftPanel = document.getElementById('mobile-left-panel');
             const rightWorkspace = document.getElementById('mobile-right-workspace');
@@ -264,11 +333,13 @@
                 locationKey: locationKey
             });
 
+            // Log entry into the historical ledger database
+            appendTransactionLog("TICKET_CREATED", napId.toUpperCase(), `Filed: ${issue} in ${locationKey}`);
+            
             document.getElementById('add-ticket-form').reset();
             renderTicketQueue();
             analyzeDispatchMatrix(uniqueId);
             
-            // Auto-flip view on mobile to show workspace details instantly
             if(window.innerWidth < 1024) switchMobileView('workspace');
         }
 
@@ -291,6 +362,7 @@
                 skills: [skill]
             });
 
+            appendTransactionLog("TECH_REGISTERED", name, `Onboarded at ${locationKey} station specializing in ${skill}`);
             document.getElementById('add-tech-form').reset();
             alert(`Technician ${name} onboarded onto the ${locationKey} grid.`);
             if (activeTicketId) analyzeDispatchMatrix(activeTicketId);
@@ -298,19 +370,89 @@
 
         window.deleteTicket = function(event, ticketId) {
             event.stopPropagation();
-            if(confirm("Are you sure you want to completely erase this dispatch ticket?")) {
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            if(!ticket) return;
+
+            if(confirm("Are you sure you want to remove this ticket from the active grid view?")) {
                 mockTickets = mockTickets.filter(t => t.id !== ticketId);
+                
+                appendTransactionLog("TICKET_ARCHIVED", ticket.napTerminalId, `Removed ticket (${ticket.issueType}) from workspace queue.`);
+                commitToDatabase();
                 renderTicketQueue();
                 
                 if (activeTicketId === ticketId) {
                     activeTicketId = null;
-                    document.getElementById('matrix-workspace').innerHTML = `
-                        <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center h-full">
-                            <p class="text-base md:text-lg mb-1 px-4">Select an active Pangasinan node ticket to manage status or deploy responsive crews.</p>
-                        </div>
-                    `;
+                    resetMatrixWorkspacePlaceholder();
                 }
             }
+        }
+
+        function resetMatrixWorkspacePlaceholder() {
+            document.getElementById('matrix-workspace').innerHTML = `
+                <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center h-full">
+                    <p class="text-base md:text-lg mb-1 px-4">Select an active Pangasinan node ticket to manage status or deploy responsive crews.</p>
+                </div>
+            `;
+        }
+
+        // NEW ADJUSTMENT: Clears workspace visuals cleanly while safeguarding transaction logs
+        window.clearActiveGridOnly = function() {
+            if(confirm("Clear Workspace? This safely empties active display entries without touching your permanent Ledger database.")) {
+                mockTickets = [];
+                activeTicketId = null;
+                appendTransactionLog("GRID_RESET", "SYSTEM", "Active interface grid cleared out manually by operator.");
+                commitToDatabase();
+                renderTicketQueue();
+                resetMatrixWorkspacePlaceholder();
+            }
+        }
+
+        // NEW DATABASE UTILITY: Complete wipe hook for deep data master clearing
+        window.wipeEntireDatabaseSystem = function() {
+            if(confirm("CRITICAL: You are about to permanently erase the complete Transaction Ledger Database history. This action cannot be undone. Proceed?")) {
+                localStorage.clear();
+                mockTickets = [...defaultTickets];
+                mockTechnicians = [...defaultTechnicians];
+                transactionDatabase = [];
+                activeTicketId = null;
+                commitToDatabase();
+                renderTicketQueue();
+                resetMatrixWorkspacePlaceholder();
+                closeTransactionDatabaseModal();
+                alert("All underlying log history has been successfully purged.");
+            }
+        }
+
+        // NEW DISPLAY MODAL TRIGGERS
+        window.openTransactionDatabaseModal = function() {
+            document.getElementById('database-modal').classList.remove('hidden');
+            const ledgerRows = document.getElementById('database-ledger-rows');
+            
+            if(transactionDatabase.length === 0) {
+                ledgerRows.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-xs text-slate-500">Database is empty. Execute an action to record transaction logs.</td></tr>`;
+                return;
+            }
+
+            ledgerRows.innerHTML = transactionDatabase.map(log => {
+                let badgeColor = "bg-slate-800 text-slate-300";
+                if(log.action === "TICKET_CREATED") badgeColor = "bg-blue-950 text-blue-400 border border-blue-900";
+                if(log.action === "STATUS_CHANGED") badgeColor = "bg-purple-950 text-purple-400 border border-purple-900";
+                if(log.action === "CREW_DEPLOYED") badgeColor = "bg-amber-950 text-amber-400 border border-amber-900";
+                if(log.action === "TICKET_ARCHIVED") badgeColor = "bg-red-950 text-red-400 border border-red-900";
+
+                return `
+                    <tr class="hover:bg-slate-900/40 transition">
+                        <td class="p-3 font-mono text-[11px] text-slate-500 whitespace-nowrap">${log.timestamp}</td>
+                        <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${badgeColor}">${log.action}</span></td>
+                        <td class="p-3 font-semibold text-white tracking-wide">${log.asset}</td>
+                        <td class="p-3 text-xs text-slate-400 max-w-xs break-words">${log.desc}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.closeTransactionDatabaseModal = function() {
+            document.getElementById('database-modal').classList.add('hidden');
         }
 
         function renderTicketQueue() {
@@ -459,6 +601,7 @@
             const ticket = mockTickets.find(t => t.id === ticketId);
             if (!ticket) return;
 
+            const oldNap = ticket.napTerminalId;
             const newIssue = document.getElementById('edit-issue').value;
             const newNap = document.getElementById('edit-nap').value;
             const newLocKey = document.getElementById('edit-location').value;
@@ -472,13 +615,17 @@
             ticket.lat = locationData.lat;
             ticket.lon = locationData.lon;
 
+            appendTransactionLog("TICKET_MODIFIED", ticket.napTerminalId, `Updated configuration from node reference key: ${oldNap}`);
             renderTicketQueue();
             analyzeDispatchMatrix(ticketId);
         }
 
         window.changeTicketStatus = function(ticketId, newStatus) {
             const ticket = mockTickets.find(t => t.id === ticketId);
+            const oldStatus = ticket.status;
             ticket.status = newStatus;
+            
+            appendTransactionLog("STATUS_CHANGED", ticket.napTerminalId, `Shifted state from ${oldStatus} to ${newStatus}`);
             renderTicketQueue();
             analyzeDispatchMatrix(ticketId);
         }
@@ -488,6 +635,8 @@
             const ticket = mockTickets.find(t => t.id === ticketId);
             ticket.assignedTech = tech.name;
             ticket.status = "IN_PROGRESS";
+            
+            appendTransactionLog("CREW_DEPLOYED", ticket.napTerminalId, `Assigned responder unit ${tech.name} to asset location point.`);
             renderTicketQueue();
             analyzeDispatchMatrix(ticketId);
         }
@@ -557,8 +706,7 @@
     </script>
 
     <style>
-        /* Clean scrollbar overrides for better UI presentation */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         
