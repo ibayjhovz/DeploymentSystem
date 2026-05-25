@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecom Technician Deployment System MVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans antialiased">
+
+    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-blue-400 tracking-wide">🛰️ TELECOM DISPATCH SYSTEM</h1>
+            <div class="flex space-x-4 text-sm text-gray-400">
+                <div>Network Status: <span class="text-green-400 font-semibold">● ONLINE</span></div>
+                <div>Active Crews: <span id="crew-count" class="text-white font-semibold">3</span></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)]">
+        
+        <section class="lg:col-span-4 bg-gray-800 border border-gray-700 rounded-xl p-4 flex flex-col h-full">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+                📥 Infrastructure Alerts Queue
+            </h2>
+            <div id="ticket-queue" class="space-y-3 overflow-y-auto flex-1 pr-1">
+                </div>
+        </section>
+
+        <section class="lg:col-span-8 bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col h-full justify-between">
+            <div id="matrix-workspace">
+                <div class="text-center py-20 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl">
+                    <p class="text-lg">Select an active infrastructure ticket from the queue to run geo-dispatch calculations.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Mocking localized database layers for immediate runtime without database configuration friction
+        const mockTickets = [
+            { id: "t1", customerName: "Rona Rance", address: "Pangasinan, Philippines", napTerminalId: "NAP-312-North", issueType: "Fiber Link Down (FTTH)", lat: 15.9758, lon: 120.5692 },
+            { id: "t2", customerName: "John Doe", address: "Manila, Philippines", napTerminalId: "NAP-004-Core", issueType: "High Optical Signal Loss (-28dBm)", lat: 14.5995, lon: 120.9842 },
+            { id: "t3", customerName: "Jane Smith", address: "Cebu, Philippines", napTerminalId: "NAP-77-South", issueType: "Modem Activation Failure", lat: 10.3157, lon: 123.8854 }
+        ];
+
+        const mockTechnicians = [
+            { id: "tech1", name: "Tech Unit Alpha (Splicing Specialist)", status: "IDLE", lat: 15.9600, lon: 120.5500, skills: ["Fiber Splicing", "ODTR Testing"] },
+            { id: "tech2", name: "Tech Unit Beta (FTTH Home Installer)", status: "IDLE", lat: 15.9900, lon: 120.5800, skills: ["Modem Provisioning", "Drop Wire Repair"] },
+            { id: "tech3", name: "Tech Unit Gamma (Heavy Infrastructure)", status: "ON_SITE", lat: 14.6100, lon: 120.9900, skills: ["OLT Maintenance", "Coaxial Trunk"] }
+        ];
+
+        // Haversine formula calculation logic to determine proximity
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's Radius in KM
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        // Render the list of pending tasks on startup
+        function renderTicketQueue() {
+            const queueContainer = document.getElementById('ticket-queue');
+            queueContainer.innerHTML = mockTickets.map(ticket => `
+                <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-gray-950 p-4 border border-gray-700 hover:border-blue-500 rounded-lg cursor-pointer transition group">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-red-500/10 text-red-400 text-xs px-2.5 py-1 rounded font-medium border border-red-500/20">🚨 Critical</span>
+                        <span class="text-xs text-gray-500 group-hover:text-blue-400 font-mono transition">Run Logic →</span>
+                    </div>
+                    <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
+                    <p class="text-xs text-gray-400 mb-1"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
+                    <p class="text-xs text-gray-500 truncate">📍 ${ticket.address}</p>
+                </div>
+            `).join('');
+        }
+
+        // Execute matching algorithms dynamically on click
+        window.analyzeDispatchMatrix = function(ticketId) {
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            const workspace = document.getElementById('matrix-workspace');
+
+            // Map distances to available technicians
+            const sortedTechs = mockTechnicians.map(tech => {
+                const distance = calculateDistance(ticket.lat, ticket.lon, tech.lat, tech.lon);
+                return { ...tech, distance };
+            }).sort((a, b) => a.distance - b.distance);
+
+            workspace.innerHTML = `
+                <div class="mb-6">
+                    <div class="text-xs font-bold tracking-wider text-blue-400 uppercase mb-1">Active Optimization Target</div>
+                    <h2 class="text-xl font-bold text-white mb-2">${ticket.issueType}</h2>
+                    <p class="text-sm text-gray-400">Target Box Node: <span class="text-gray-200 font-mono">${ticket.napTerminalId}</span> (${ticket.lat}, ${ticket.lon})</p>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Geospatial Routing Matches (Closest First)</h3>
+                <div class="overflow-hidden border border-gray-700 rounded-lg bg-gray-950">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-900 border-b border-gray-700 text-gray-400 font-medium">
+                            <tr>
+                                <th class="p-3">Field Crew</th>
+                                <th class="p-3">Proximity</th>
+                                <th class="p-3">Certifications</th>
+                                <th class="p-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">
+                            ${sortedTechs.map(tech => `
+                                <tr>
+                                    <td class="p-3 font-medium text-white flex items-center gap-2">
+                                        <span class="w-2 height h-2 rounded-full ${tech.status === 'IDLE' ? 'bg-green-400' : 'bg-amber-400'}"></span>
+                                        ${tech.name}
+                                    </td>
+                                    <td class="p-3 text-gray-300 font-mono">${tech.distance.toFixed(2)} km away</td>
+                                    <td class="p-3">
+                                        ${tech.skills.map(skill => `<span class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded border border-gray-700 mr-1">${skill}</span>`).join('')}
+                                    </td>
+                                    <td class="p-3 text-right">
+                                        <button onclick="deployCrew('${tech.id}', '${ticket.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3 py-1.5 rounded transition">
+                                            Deploy Unit
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        window.deployCrew = function(techId, ticketId) {
+            alert(`Deployment Command Issued! Crew ${techId} has been systematically routed to Ticket ${ticketId}. Check telemetry logs.`);
+        }
+
+        // Initialize display layers
+        renderTicketQueue();
+    </script>
+</body>
+</html>
