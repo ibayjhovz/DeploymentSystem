@@ -15,7 +15,7 @@
     <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold text-amber-400 tracking-wide">EM-AMEN PANGASINAN TELECOM DISPATCH</h1>
+                <h1 class="text-xl font-bold text-amber-400 tracking-wide">🛰️ EM-AMEN PANGASINAN TELECOM DISPATCH</h1>
                 <p class="text-xs text-slate-400">All 48 Municipalities & Cities Fully Integrated</p>
             </div>
             <button onclick="openDailyReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow">
@@ -111,10 +111,8 @@
                     <p class="text-xs text-slate-500 font-mono">Pangasinan Grid • Generated via Cloud Dispatch System</p>
                 </div>
 
-                <!-- NEW: Dynamic Analytics Summary Boxes -->
-                <div id="report-analytics-bar" class="grid grid-cols-4 gap-2 mb-6 text-center">
-                    <!-- Injected dynamically via JS -->
-                </div>
+                <!-- Dynamic Analytics Summary Boxes -->
+                <div id="report-analytics-bar" class="grid grid-cols-4 gap-2 mb-6 text-center"></div>
 
                 <div id="report-items-list" class="space-y-4"></div>
             </div>
@@ -158,7 +156,7 @@
             "Malasiqui": { lat: 15.9292, lon: 120.4136, fullAddress: "Poblacion, Malasiqui, Pangasinan" },
             "Manaoag": { lat: 16.0425, lon: 120.4858, fullAddress: "Poblacion, Manaoag, Pangasinan" },
             "Mangaldan": { lat: 16.0683, lon: 120.4019, fullAddress: "Poblacion, Mangaldan, Pangasinan" },
-            "Mangatarem": { lat: 15.7892, lon: 120.2886, fullAddress: "Poblacion, Mangatarem, Pangasinan" },
+            "Mangalarem": { lat: 15.7892, lon: 120.2886, fullAddress: "Poblacion, Mangatarem, Pangasinan" },
             "Mapandan": { lat: 16.0272, lon: 120.4497, fullAddress: "Poblacion, Mapandan, Pangasinan" },
             "Natividad": { lat: 16.0456, lon: 120.7981, fullAddress: "Poblacion, Natividad, Pangasinan" },
             "Pozorrubio": { lat: 16.1111, lon: 120.5408, fullAddress: "Poblacion, Pozorrubio, Pangasinan" },
@@ -181,7 +179,7 @@
             "Villasis": { lat: 15.9019, lon: 120.5878, fullAddress: "Poblacion, Villasis, Pangasinan" }
         };
 
-        const mockTickets = [
+        let mockTickets = [
             { id: "t1", customerName: "Dagupan Hub", address: "AB Fernandez Ave, Dagupan City, Pangasinan", napTerminalId: "NAP-DAG-012", issueType: "Main Trunk Fiber Cut", status: "PENDING", assignedTech: "Unassigned", lat: 16.0433, lon: 120.3333 }
         ];
 
@@ -247,7 +245,8 @@
                 status: "PENDING",
                 assignedTech: "Unassigned",
                 lat: locationData.lat,
-                lon: locationData.lon
+                lon: locationData.lon,
+                locationKey: locationKey
             });
 
             document.getElementById('add-ticket-form').reset();
@@ -279,21 +278,50 @@
             if (activeTicketId) analyzeDispatchMatrix(activeTicketId);
         }
 
+        // NEW FEATURE: Delete Ticket Function
+        window.deleteTicket = function(event, ticketId) {
+            event.stopPropagation(); // Prevents clicking the delete button from opening the ticket matrix details
+            if(confirm("Are you sure you want to completely erase this dispatch ticket?")) {
+                mockTickets = mockTickets.filter(t => t.id !== ticketId);
+                renderTicketQueue();
+                
+                // Reset workspace if the open ticket was the one deleted
+                if (activeTicketId === ticketId) {
+                    activeTicketId = null;
+                    document.getElementById('matrix-workspace').innerHTML = `
+                        <div class="text-center py-24 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
+                            <p class="text-lg mb-1">Select an active Pangasinan node ticket to manage status or dispatch units.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
         function renderTicketQueue() {
             const queueContainer = document.getElementById('ticket-queue');
+            if(mockTickets.length === 0) {
+                queueContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No active tickets registered on grid.</p>`;
+                return;
+            }
+
             queueContainer.innerHTML = mockTickets.map(ticket => {
                 let statusColor = "bg-red-500/10 text-red-400 border-red-500/20";
                 if(ticket.status === "IN_PROGRESS") statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
                 if(ticket.status === "COMPLETED") statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
 
                 return `
-                    <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition">
-                        <div class="flex justify-between items-start mb-2">
+                    <div onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-950 p-4 border border-slate-700 hover:border-amber-500 rounded-lg cursor-pointer transition relative group">
+                        <div class="flex justify-between items-start mb-2 mr-6">
                             <span class="text-xs px-2 py-0.5 rounded font-medium border ${statusColor}">${ticket.status}</span>
                             <span class="text-xs text-slate-500 font-mono">Manage →</span>
                         </div>
                         <h3 class="font-semibold text-white text-sm mb-1">${ticket.issueType}</h3>
                         <p class="text-xs text-slate-400"><strong>Terminal:</strong> ${ticket.napTerminalId}</p>
+                        
+                        <!-- NEW: Trash Icon overlay for direct grid deletion -->
+                        <button onclick="deleteTicket(event, '${ticket.id}')" class="absolute top-3 right-3 text-slate-500 hover:text-red-400 transition text-sm p-1" title="Delete Ticket">
+                            🗑️
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -311,19 +339,26 @@
             }).sort((a, b) => a.distance - b.distance);
 
             workspace.innerHTML = `
-                <div class="bg-slate-950 p-4 rounded-lg border border-slate-700 mb-6 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">${ticket.issueType}</h2>
-                        <p class="text-sm text-slate-400">📍 ${ticket.address} (${ticket.napTerminalId})</p>
-                        <p class="text-xs text-slate-500 mt-1">Assigned Tech: <strong class="text-slate-300">${ticket.assignedTech}</strong></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
-                        <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="bg-slate-800 border border-slate-600 text-white rounded p-2 text-sm focus:outline-none focus:border-amber-500">
-                            <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
-                            <option value="IN_PROGRESS" ${ticket.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
-                            <option value="COMPLETED" ${ticket.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
-                        </select>
+                <div class="bg-slate-950 p-5 rounded-lg border border-slate-700 mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h2 class="text-lg font-bold text-white">${ticket.issueType}</h2>
+                                <button onclick="enableInlineEdit('${ticket.id}')" class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-400 border border-slate-600 transition">
+                                    ✏️ Edit Info
+                                </button>
+                            </div>
+                            <p class="text-sm text-slate-400">📍 ${ticket.address} (${ticket.napTerminalId})</p>
+                            <p class="text-xs text-slate-500 mt-1">Assigned Tech: <strong class="text-slate-300">${ticket.assignedTech}</strong></p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Update Status</label>
+                            <select onchange="changeTicketStatus('${ticket.id}', this.value)" class="bg-slate-800 border border-slate-600 text-white rounded p-2 text-sm focus:outline-none focus:border-amber-500">
+                                <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                                <option value="IN_PROGRESS" ${ticket.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
+                                <option value="COMPLETED" ${ticket.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -357,6 +392,76 @@
             `;
         }
 
+        // NEW FEATURE: Swap standard block layout into interactive modification text-inputs
+        window.enableInlineEdit = function(ticketId) {
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+            const workspace = document.getElementById('matrix-workspace');
+
+            // Set up select items for towns
+            const options = Object.keys(coordinatesMap).sort().map(loc => `
+                <option value="${loc}" ${ticket.locationKey === loc || (loc === "Dagupan City" && !ticket.locationKey) ? 'selected' : ''}>${loc}</option>
+            `).join('');
+
+            workspace.innerHTML = `
+                <div class="bg-slate-950 p-5 rounded-lg border border-amber-500/50 bg-slate-950/60 shadow-2xl">
+                    <h2 class="text-sm font-bold uppercase text-amber-400 mb-3 tracking-wider">✏️ Modify Ticket Entry Settings</h2>
+                    <form onsubmit="saveTicketEdits(event, '${ticket.id}')" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Reported Issue Description</label>
+                            <input type="text" id="edit-issue" value="${ticket.issueType}" required 
+                                class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">NAP Terminal Identifier</label>
+                                <input type="text" id="edit-nap" value="${ticket.napTerminalId}" required 
+                                    class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Geographic Boundary Point</label>
+                                <select id="edit-location" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                                    ${options}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="analyzeDispatchMatrix('${ticket.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded transition">
+                                Cancel
+                            </button>
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded transition shadow">
+                                Save Structural Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        // NEW FEATURE: Commit changes, update coordinates and recompute mathematical metrics
+        window.saveTicketEdits = function(event, ticketId) {
+            event.preventDefault();
+            const ticket = mockTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+
+            const newIssue = document.getElementById('edit-issue').value;
+            const newNap = document.getElementById('edit-nap').value;
+            const newLocKey = document.getElementById('edit-location').value;
+
+            const locationData = coordinatesMap[newLocKey];
+
+            // Re-map internal structural parameters safely
+            ticket.issueType = newIssue;
+            ticket.napTerminalId = newNap.toUpperCase();
+            ticket.locationKey = newLocKey;
+            ticket.address = locationData.fullAddress;
+            ticket.lat = locationData.lat;
+            ticket.lon = locationData.lon;
+
+            renderTicketQueue();
+            analyzeDispatchMatrix(ticketId); // Instantly reload workspace layout with new metrics active
+        }
+
         window.changeTicketStatus = function(ticketId, newStatus) {
             const ticket = mockTickets.find(t => t.id === ticketId);
             ticket.status = newStatus;
@@ -378,13 +483,11 @@
             const itemsList = document.getElementById('report-items-list');
             const analyticsBar = document.getElementById('report-analytics-bar');
             
-            // Calculate dynamic totals for the summary dashboard banner
             const totalTasks = mockTickets.length;
             const completedCount = mockTickets.filter(t => t.status === 'COMPLETED').length;
             const inProgressCount = mockTickets.filter(t => t.status === 'IN_PROGRESS').length;
             const pendingCount = mockTickets.filter(t => t.status === 'PENDING').length;
 
-            // Render out clean high-contrast scorecard tiles inside the printable report block
             analyticsBar.innerHTML = `
                 <div class="bg-slate-100 p-2 border border-slate-300 rounded">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Overall Tasks</p>
